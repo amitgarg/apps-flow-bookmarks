@@ -1,0 +1,114 @@
+{
+  "name": "tmp-flowwise-bookmarks",
+  "version": "1.0.0",
+  "description": "vscode extension to create app specific bookmarks for tmp",
+  "main": "extension.js",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "tmp.bookmarks.loadFromApp",
+        "title": "TMP: Load Bookmarks from an App"
+      },
+      {
+        "command": "tmp.bookmarks.saveForApp",
+        "title": "TMP: Save Bookmarks for App"
+      },
+      {
+        "command": "tmp.bookmarks.initializeForApp",
+        "title": "TMP: Initialize Bookmarks for an App"
+      },
+      {
+        "command": "tmp.bookmarks.openFileToLine",
+        "title": "TMP: Open File to Line"
+      },
+      {
+        "command": "tmp.bookmarks.generateDiagram",
+        "title": "TMP: generate diagram"
+      },
+      {
+        "command": "tmp.bookmarks.openJoinedFlow",
+        "title": "render flow",
+        "icon": "$(symbol-class)"
+      },
+      {
+        "command": "tmp.bookmarks.diagram",
+        "title": "export diagram",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "tmp.bookmarks.copyAppFlow",
+        "title": "copy json snippet",
+        "icon": "$(json)"
+      }
+    ],
+    "views": {
+      "MCB-explorer": [
+        {
+          "id": "allFlows",
+          "name": "All Flows",
+          "icon": "images/fb-bookmark.svg"
+        },
+        {
+          "id": "flowBookmarks",
+          "name": "Flow Bookmarks",
+          "icon": "images/fb-bookmark.svg"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "tmp.bookmarks.openFileToLine",
+          "group": "navigation",
+          "when": "view == flowBookmarks && viewItem == bookmark"
+        },
+        {
+          "command": "tmp.bookmarks.openJoinedFlow",
+          "group": "inline",
+          "when": "view == allFlows && viewItem =~ /show/"
+        },
+        {
+          "command": "tmp.bookmarks.diagram",
+          "group": "inline",
+          "when": "view == allFlows && viewItem =~ /diagram/"
+        },
+        {
+          "command": "tmp.bookmarks.copyAppFlow",
+          "group": "inline",
+          "when": "view == allFlows && viewItem =~ /copyJson/"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amitgarg/tmp-flowwise-bookmarks.git"
+  },
+  "keywords": [
+    "tmp",
+    "flowwise",
+    "bookmarks",
+    "diagram"
+  ],
+  "categories": [
+    "Extension Packs"
+  ],
+  "extensionDependencies": [
+    "DeepakPahawa.flowbookmark"
+  ],
+  "author": "Amit Kumar Garg",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amitgarg/tmp-flowwise-bookmarks/issues"
+  },
+  "homepage": "https://github.com/amitgarg/tmp-flowwise-bookmarks#readme"
+}
