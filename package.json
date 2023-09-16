@@ -25,11 +25,12 @@
       },
       {
         "command": "tmp.bookmarks.openFileToLine",
-        "title": "TMP: Open File to Line"
+        "title": "TMP: Open File to Line",
+        "when": "false"
       },
       {
-        "command": "tmp.bookmarks.generateDiagram",
-        "title": "TMP: generate diagram"
+        "command": "tmp.bookmarks.searchFlows",
+        "title": "TMP: Search Flows"
       },
       {
         "command": "tmp.bookmarks.openJoinedFlow",

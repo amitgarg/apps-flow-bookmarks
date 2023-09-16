@@ -49,7 +49,7 @@ class AllFlowsProvider {
 						type: 'flow',
 						app: appName,
 						flowType: 'joined',
-						contextValue: 'show,diagram',
+						contextValue: 'show,diagram,copyJson',
 						iconPath,
 					};
 					data.children = joinedFlows[flowName].map(({ flow, app }) => {

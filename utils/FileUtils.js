@@ -34,4 +34,12 @@ function handleFileCode() {
 		getCodeToFileMap: () => codeToFileMap,
 	};
 }
+function getJoinFlowConfig({app,flow}){
+	return  `
+	{
+		"app": "${app}",
+		"flow": "${flow}"
+	}`;
+}
 exports.handleFileCode = handleFileCode;
+exports.getJoinFlowConfig = getJoinFlowConfig;
