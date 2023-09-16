@@ -24,13 +24,18 @@
         "title": "TMP: Initialize Bookmarks for an App"
       },
       {
+        "command": "tmp.bookmarks.searchFlowsAcross",
+        "title": "TMP: Search Flows Across Apps with keywords"
+      },
+      {
         "command": "tmp.bookmarks.openFileToLine",
         "title": "TMP: Open File to Line",
         "when": "false"
       },
       {
         "command": "tmp.bookmarks.searchFlows",
-        "title": "TMP: Search Flows"
+        "title": "TMP: Search Flows",
+        "icon": "$(filter)"
       },
       {
         "command": "tmp.bookmarks.openJoinedFlow",
@@ -46,6 +51,11 @@
         "command": "tmp.bookmarks.copyAppFlow",
         "title": "copy json snippet",
         "icon": "$(json)"
+      },
+      {
+        "command": "tmp.bookmarks.removeFilter",
+        "title": "copy json snippet",
+        "icon": "$(refresh)"
       }
     ],
     "views": {
@@ -63,6 +73,20 @@
       ]
     },
     "menus": {
+      "view/title": [
+        {
+          "command": "tmp.bookmarks.removeFilter",
+          "when": "view == allFlows && filterAllBookmarks == true",
+          "showOn": "always",
+          "group": "navigation"
+        },
+        {
+          "command": "tmp.bookmarks.searchFlows",
+          "when": "view == allFlows",
+          "showOn": "always",
+          "group": "navigation"
+        }
+      ],
       "view/item/context": [
         {
           "command": "tmp.bookmarks.openFileToLine",
