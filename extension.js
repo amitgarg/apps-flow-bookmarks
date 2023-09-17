@@ -80,6 +80,8 @@ function activate(context) {
                     };
                     allFlowsTreeDataProvider.setData(data);
                     allFlowsTreeDataProvider.refresh();
+                    flowBookmarksProvider.setData([]);
+                    flowBookmarksProvider.refresh();
                   });
               });
           }
