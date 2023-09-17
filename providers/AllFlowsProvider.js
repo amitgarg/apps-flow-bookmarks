@@ -44,8 +44,8 @@ class AllFlowsProvider {
       .map((joinedFlow) => {
         return {
           flow: joinedFlow,
-          subflows: joinedFlows[joinedFlow].filter(({ flow }) =>
-            flow.toUpperCase().includes(this.filterValue)
+          subflows: joinedFlows[joinedFlow].filter(({ flow, app }) =>
+            flow.toUpperCase().includes(this.filterValue) || app.toUpperCase().includes(this.filterValue)
           ),
         };
       })
