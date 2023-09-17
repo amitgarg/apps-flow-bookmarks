@@ -22,8 +22,6 @@ class AppLoader {
 		this.onChangeBookmarksStatus = onChangeBookmarksStatus;
 		this.basicFlows;
 		this.joinedFlows;
-        this.populateBasicFlows();
-		this.populateJoinedFlows();
 
 
 		this.populateBasicFlows = this.populateBasicFlows.bind(this);

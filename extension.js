@@ -60,20 +60,29 @@ function activate(context) {
           title: "Create bookmarks related to App",
         })
         .then((appName) => {
-          const appLoader = appsManager.getAppLoader(appName);
-          vscode.commands
-            .executeCommand("flowbookmark.clearAll")
-            .then(appLoader.initializeBookmarks)
-            .then(({ success }) => {
-              vscode.commands
-                .executeCommand("flowbookmark.importFromFile")
-                .then(() => {
-                  state.activeApp = appName;
-                  context.globalState.update(BOOKMARKS_STATE_KEY, state);
-                  updateStatusBarItem(appName);
-                  vscode.window.showInformationMessage(success);
-                });
-            });
+          if (appName) {
+            const appLoader = appsManager.getAppLoader(appName);
+            return vscode.commands
+              .executeCommand("flowbookmark.clearAll")
+              .then(appLoader.initializeBookmarks)
+              .then(({ success }) => {
+                return vscode.commands
+                  .executeCommand("flowbookmark.importFromFile")
+                  .then(() => {
+                    state.activeApp = appName;
+                    context.globalState.update(BOOKMARKS_STATE_KEY, state);
+                    updateStatusBarItem(appName);
+                    vscode.window.showInformationMessage(success);
+                    let data = {
+                      appName: appName,
+                      basicFlows: {},
+                      joinedFlows: {},
+                    };
+                    allFlowsTreeDataProvider.setData(data);
+                    allFlowsTreeDataProvider.refresh();
+                  });
+              });
+          }
         });
     }
   );
@@ -115,32 +124,34 @@ function activate(context) {
   context.subscriptions.push(actionReloadBookmarksForApp);
 
   const loadBookmarksFromApp = (appName) => {
-    let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
-    const appLoader = appsManager.getAppLoader(appName);
-    return vscode.commands
-      .executeCommand("flowbookmark.clearAll")
-      .then(appLoader.loadBookmarks)
-      .then(({ success }) => {
-        return vscode.commands
-          .executeCommand("flowbookmark.importFromFile")
-          .then(() => {
-            state.activeApp = appName;
-            context.globalState.update(BOOKMARKS_STATE_KEY, state);
-            updateStatusBarItem(appName);
-            vscode.window.showInformationMessage(success);
-            appLoader.basicFlows.then((basicFlows) => {
-              appLoader.joinedFlows.then((joinedFlows) => {
-                let data = {
-                  appName: appName,
-                  basicFlows,
-                  joinedFlows,
-                };
-                allFlowsTreeDataProvider.setData(data);
-                allFlowsTreeDataProvider.refresh();
+    if (appName) {
+      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
+      const appLoader = appsManager.getAppLoader(appName);
+      return vscode.commands
+        .executeCommand("flowbookmark.clearAll")
+        .then(appLoader.loadBookmarks)
+        .then(({ success }) => {
+          return vscode.commands
+            .executeCommand("flowbookmark.importFromFile")
+            .then(() => {
+              state.activeApp = appName;
+              context.globalState.update(BOOKMARKS_STATE_KEY, state);
+              updateStatusBarItem(appName);
+              vscode.window.showInformationMessage(success);
+              appLoader.basicFlows.then((basicFlows) => {
+                appLoader.joinedFlows.then((joinedFlows) => {
+                  let data = {
+                    appName: appName,
+                    basicFlows,
+                    joinedFlows,
+                  };
+                  allFlowsTreeDataProvider.setData(data);
+                  allFlowsTreeDataProvider.refresh();
+                });
               });
             });
-          });
-      });
+        });
+    }
   };
 
   const searchFlowsCommand = vscode.commands.registerCommand(
