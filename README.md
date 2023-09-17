@@ -24,6 +24,10 @@ This command initializes bookmarks for an app. creates multiColorBookmarks.json 
 - `TMP: Save Bookmarks for App`
 This command saves bookmarks for the active app. To use this command, run the command directly.
 
+- `TMP: Manage Joined Flows for an App`
+This command manages joined flows for an app. To use this command, run the command directly. It will open the joinedBookmarks.json file in editor. User can add/remove joined flows from this file.
+
+
 - `TMP: Search Flows Across Apps with keywords`
 This command searches flows across apps with keywords. To use this command, run the command directly. This command opens the Search Panel, user can see which all apps are listed in the search results. User can load the bookmarks for the app and again search in flows specific to that app. 
 The space separated keywords are coverted to OR query. (keyword1)|(keyword2)

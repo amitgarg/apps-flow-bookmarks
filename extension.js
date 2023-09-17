@@ -156,6 +156,22 @@ function activate(context) {
     }
   };
 
+  const manageJoinedBookmarksCommand = vscode.commands.registerCommand(
+    "tmp.bookmarks.manageJoinedBookmarks",
+    () => {
+      vscode.window
+      .showQuickPick(appsManager.getAppsWithBookmarks(), {
+        placeHolder: "Select an App",
+        title: "Manage Joined Flows for App",
+      })
+      .then((appName) => {
+        const appLoader = appsManager.getAppLoader(appName);
+        appLoader.manageJoinedBookmarks();
+      })
+    }
+  );
+  context.subscriptions.push(manageJoinedBookmarksCommand);
+
   const searchFlowsCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.searchFlows",
     () => {

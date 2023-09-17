@@ -25,6 +25,11 @@
         "category": "TMP"
       },
       {
+        "command": "tmp.bookmarks.manageJoinedBookmarks",
+        "title": "Manage Joined Flows for an App",
+        "category": "TMP"
+      },
+      {
         "command": "tmp.bookmarks.saveForApp",
         "title": "Save Bookmarks for App",
         "category": "TMP"
