@@ -189,12 +189,14 @@ function activate(context) {
   const openFileToLineCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.openFileToLine",
     (filePath, lineNumber) => {
-      let line = parseInt(lineNumber);
-      vscode.workspace.openTextDocument(filePath).then((doc) => {
-        vscode.window.showTextDocument(doc, {
-          selection: new vscode.Range(line - 1, 0, line - 1, 0),
+      if (filePath) {
+        let line = parseInt(lineNumber);
+        vscode.workspace.openTextDocument(filePath).then((doc) => {
+          vscode.window.showTextDocument(doc, {
+            selection: new vscode.Range(line - 1, 0, line - 1, 0),
+          });
         });
-      });
+      }
     }
   );
   context.subscriptions.push(openFileToLineCommand);

@@ -35,7 +35,7 @@ class FlowBookmarksProvider {
               command: {
                 command: 'tmp.bookmarks.openFileToLine',
                 title: 'Open File',
-                arguments: [path.join(this.projectDir, bookmark.path), lineNumber],
+                arguments: [bookmark.path && path.join(this.projectDir, bookmark.path), lineNumber],
               },
             };
           });

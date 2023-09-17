@@ -112,7 +112,7 @@ class AppLoader {
 			this.populateBasicFlows();
 		}
 		return this.basicFlows.then((flows) => {
-			return flows[flowName] || ['No bookmarks found for this flow'];
+			return flows[flowName] || [{description: '--- BOOKMARK_NOT_FOUND ---', path: '', fileName: "file-not-found", lineNumber: 0}];
 		});
 	}
 	getJoinedFlow(flowName) {
