@@ -24,7 +24,7 @@ function activate(context) {
   );
 
   // Log some properties of the extension object
-  console.log(myExtension.packageJSON.contributes);
+  //   console.log(myExtension.packageJSON.contributes);
   // Activate the extension if it's not already activated
   if (!myExtension.isActive) {
     myExtension.activate().then(() => {
@@ -44,8 +44,10 @@ function activate(context) {
     vscode.StatusBarAlignment.Left,
     10
   );
+  context.subscriptions.push(myStatusBarItem);
 
   const appsManager = new AppsManager(context, projectDir);
+  context.subscriptions.push(appsManager);
 
   let actionCreateBookmarksForApp = vscode.commands.registerCommand(
     "tmp.bookmarks.initializeForApp",
@@ -69,60 +71,77 @@ function activate(context) {
                   state.activeApp = appName;
                   context.globalState.update(BOOKMARKS_STATE_KEY, state);
                   updateStatusBarItem(appName);
-                  showTimeoutInfoMessage(success);
+                  vscode.window.showInformationMessage(success);
                 });
             });
         });
     }
   );
+  context.subscriptions.push(actionCreateBookmarksForApp);
 
   const allFlowsTreeDataProvider = new AllFlowsProvider({
     joinedFlows: {},
     appName: "None",
     basicFlows: {},
   });
-  vscode.window.createTreeView("allFlows", {
+  const allFlowsTreeView = vscode.window.createTreeView("allFlows", {
     treeDataProvider: allFlowsTreeDataProvider,
   });
+  context.subscriptions.push(allFlowsTreeView);
 
-  let actionActivateBookmarksForApp = vscode.commands.registerCommand(
+  let actionLoadBookmarksForApp = vscode.commands.registerCommand(
     "tmp.bookmarks.loadFromApp",
     () => {
-      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
       vscode.window
         .showQuickPick(appsManager.getAppsWithBookmarks(), {
           placeHolder: "Select an App",
           title: "Load bookmarks from App",
         })
-        .then((appName) => {
-          const appLoader = appsManager.getAppLoader(appName);
-          vscode.commands
-            .executeCommand("flowbookmark.clearAll")
-            .then(appLoader.loadBookmarks)
-            .then(({ success }) => {
-              return vscode.commands
-                .executeCommand("flowbookmark.importFromFile")
-                .then(() => {
-                  state.activeApp = appName;
-                  context.globalState.update(BOOKMARKS_STATE_KEY, state);
-                  updateStatusBarItem(appName);
-                  showTimeoutInfoMessage(success);
-                  appLoader.basicFlows.then((basicFlows) => {
-                    appLoader.joinedFlows.then((joinedFlows) => {
-                      let data = {
-                        appName: appName,
-                        basicFlows,
-                        joinedFlows,
-                      };
-                      allFlowsTreeDataProvider.setData(data);
-                      allFlowsTreeDataProvider.refresh();
-                    });
-                  });
-                });
-            });
+        .then(loadBookmarksFromApp)
+        .then(() => {
+          vscode.commands.executeCommand("setContext", "appLoaded", true);
         });
     }
   );
+  context.subscriptions.push(actionLoadBookmarksForApp);
+
+  let actionReloadBookmarksForApp = vscode.commands.registerCommand(
+    "tmp.bookmarks.reloadFromApp",
+    () => {
+      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
+      loadBookmarksFromApp(state.activeApp);
+    }
+  );
+  context.subscriptions.push(actionReloadBookmarksForApp);
+
+  const loadBookmarksFromApp = (appName) => {
+    let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
+    const appLoader = appsManager.getAppLoader(appName);
+    return vscode.commands
+      .executeCommand("flowbookmark.clearAll")
+      .then(appLoader.loadBookmarks)
+      .then(({ success }) => {
+        return vscode.commands
+          .executeCommand("flowbookmark.importFromFile")
+          .then(() => {
+            state.activeApp = appName;
+            context.globalState.update(BOOKMARKS_STATE_KEY, state);
+            updateStatusBarItem(appName);
+            vscode.window.showInformationMessage(success);
+            appLoader.basicFlows.then((basicFlows) => {
+              appLoader.joinedFlows.then((joinedFlows) => {
+                let data = {
+                  appName: appName,
+                  basicFlows,
+                  joinedFlows,
+                };
+                allFlowsTreeDataProvider.setData(data);
+                allFlowsTreeDataProvider.refresh();
+              });
+            });
+          });
+      });
+  };
 
   const searchFlowsCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.searchFlows",
@@ -145,6 +164,7 @@ function activate(context) {
         });
     }
   );
+  context.subscriptions.push(searchFlowsCommand);
   const removeBookmarksFilterCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.removeFilter",
     () => {
@@ -153,6 +173,7 @@ function activate(context) {
       vscode.commands.executeCommand("setContext", "filterAllBookmarks", false);
     }
   );
+  context.subscriptions.push(removeBookmarksFilterCommand);
 
   const openFileToLineCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.openFileToLine",
@@ -165,6 +186,7 @@ function activate(context) {
       });
     }
   );
+  context.subscriptions.push(openFileToLineCommand);
 
   let actionSaveActiveBookmarksToAnApp = vscode.commands.registerCommand(
     "tmp.bookmarks.saveForApp",
@@ -176,11 +198,12 @@ function activate(context) {
           .executeCommand("flowbookmark.exportMyBookmarks")
           .then(appLoader.saveBookmarks)
           .then(({ success }) => {
-            showTimeoutInfoMessage(success);
+            vscode.window.showInformationMessage(success);
           });
       }
     }
   );
+  context.subscriptions.push(actionSaveActiveBookmarksToAnApp);
 
   const searchFlowsAcrossAppsCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.searchFlowsAcross",
@@ -207,6 +230,7 @@ function activate(context) {
         });
     }
   );
+  context.subscriptions.push(searchFlowsAcrossAppsCommand);
 
   const flowBookmarksProvider = new FlowBookmarksProvider(
     [],
@@ -216,9 +240,10 @@ function activate(context) {
   const flowBookmarksTreeView = vscode.window.createTreeView("flowBookmarks", {
     treeDataProvider: flowBookmarksProvider,
   });
+  context.subscriptions.push(flowBookmarksTreeView);
 
-  const openJoinedFlowCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.openJoinedFlow",
+  const openFlowCommand = vscode.commands.registerCommand(
+    "tmp.bookmarks.openFlow",
     ({ label, app, flowType }) => {
       appsManager
         .resolveFlow(app, label, flowType)
@@ -231,6 +256,7 @@ function activate(context) {
         });
     }
   );
+  context.subscriptions.push(openFlowCommand);
 
   const createDiagramCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.diagram",
@@ -246,6 +272,7 @@ function activate(context) {
       });
     }
   );
+  context.subscriptions.push(createDiagramCommand);
 
   const copyAppFlowCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.copyAppFlow",
@@ -269,7 +296,7 @@ function activate(context) {
         vscode.env.clipboard
           .writeText(textToCopy)
           .then(() => {
-            showTimeoutInfoMessage(
+            vscode.window.showInformationMessage(
               `Json Snippet copied to clipboard\n\n${textToCopy}`
             );
           })
@@ -279,24 +306,11 @@ function activate(context) {
       });
     }
   );
-
-  //   context.subscriptions.push(disposableCommand);
-
-  context.subscriptions.push(myStatusBarItem);
-  context.subscriptions.push(actionCreateBookmarksForApp);
-  context.subscriptions.push(actionActivateBookmarksForApp);
-  context.subscriptions.push(actionSaveActiveBookmarksToAnApp);
-
+  context.subscriptions.push(copyAppFlowCommand);
   let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
   updateStatusBarItem(state.activeApp || "None");
 }
 
-function showTimeoutInfoMessage(message, timeout = 1000) {
-  let messageInfo = vscode.window.showInformationMessage(message);
-  setTimeout(() => {
-    messageInfo.dispose();
-  }, timeout);
-}
 function updateStatusBarItem(appName) {
   myStatusBarItem.text = `Bookmarks: ${appName}`;
   myStatusBarItem.show();

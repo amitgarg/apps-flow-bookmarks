@@ -149,5 +149,9 @@ class AppLoader {
 				return {};
 			});
 	}
+	dispose() {
+		this.basicFlows = null;
+		this.joinedFlows = null;
+	}
 }
 exports.AppLoader = AppLoader;

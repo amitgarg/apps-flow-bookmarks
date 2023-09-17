@@ -112,5 +112,11 @@ class AppsManager {
 					});
 			});
 	}
+	dispose(){
+		Object.keys(this.appLoaders).forEach((appName) => {
+			this.appLoaders[appName].dispose();
+		});
+		this.appLoaders = null;
+	}
 }
 exports.AppsManager = AppsManager;
