@@ -136,12 +136,9 @@ function activate(context) {
           return vscode.commands
             .executeCommand("flowbookmark.importFromFile")
             .then(() => {
-              state.activeApp = appName;
-              context.globalState.update(BOOKMARKS_STATE_KEY, state);
-              updateStatusBarItem(appName);
               vscode.window.showInformationMessage(success);
-              appLoader.basicFlows.then((basicFlows) => {
-                appLoader.joinedFlows.then((joinedFlows) => {
+              Promise.all([appLoader.basicFlows, appLoader.joinedFlows]).then(
+                ([basicFlows, joinedFlows]) => {
                   let data = {
                     appName: appName,
                     basicFlows,
@@ -149,8 +146,13 @@ function activate(context) {
                   };
                   allFlowsTreeDataProvider.setData(data);
                   allFlowsTreeDataProvider.refresh();
-                });
-              });
+                }
+              );
+            })
+            .then(() => {
+              state.activeApp = appName;
+              context.globalState.update(BOOKMARKS_STATE_KEY, state);
+              updateStatusBarItem(appName);
             });
         });
     }
@@ -160,14 +162,14 @@ function activate(context) {
     "tmp.bookmarks.manageJoinedBookmarks",
     () => {
       vscode.window
-      .showQuickPick(appsManager.getAppsWithBookmarks(), {
-        placeHolder: "Select an App",
-        title: "Manage Joined Flows for App",
-      })
-      .then((appName) => {
-        const appLoader = appsManager.getAppLoader(appName);
-        appLoader.manageJoinedBookmarks();
-      })
+        .showQuickPick(appsManager.getAppsWithBookmarks(), {
+          placeHolder: "Select an App",
+          title: "Manage Joined Flows for App",
+        })
+        .then((appName) => {
+          const appLoader = appsManager.getAppLoader(appName);
+          appLoader.manageJoinedBookmarks();
+        });
     }
   );
   context.subscriptions.push(manageJoinedBookmarksCommand);
@@ -230,6 +232,8 @@ function activate(context) {
           .then(appLoader.saveBookmarks)
           .then(({ success }) => {
             vscode.window.showInformationMessage(success);
+            //removed the need to reload the bookmarks manually
+            loadBookmarksFromApp(state.activeApp);
           });
       }
     }
