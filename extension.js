@@ -19,6 +19,7 @@ function activate(context) {
   console.log(
     'Congratulations, your extension "helloworld-minimal-sample" is now active!'
   );
+
   const myExtension = vscode.extensions.getExtension(
     "DeepakPahawa.flowbookmark"
   );
@@ -80,7 +81,7 @@ function activate(context) {
                     };
                     allFlowsTreeDataProvider.setData(data);
                     allFlowsTreeDataProvider.refresh();
-                    flowBookmarksProvider.setData([]);
+                    flowBookmarksProvider.setData({});
                     flowBookmarksProvider.refresh();
                   });
               });
@@ -108,16 +109,13 @@ function activate(context) {
           placeHolder: "Select an App",
           title: "Load bookmarks from App",
         })
-        .then(loadBookmarksFromApp)
-        .then(() => {
-          vscode.commands.executeCommand("setContext", "appLoaded", true);
-        });
+        .then(loadBookmarksFromApp);
     }
   );
   context.subscriptions.push(actionLoadBookmarksForApp);
 
   let actionReloadBookmarksForApp = vscode.commands.registerCommand(
-    "tmp.bookmarks.reloadFromApp",
+    "tmp.bookmarks.reloadFlows",
     () => {
       let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
       loadBookmarksFromApp(state.activeApp);
@@ -146,6 +144,8 @@ function activate(context) {
                   };
                   allFlowsTreeDataProvider.setData(data);
                   allFlowsTreeDataProvider.refresh();
+                  flowBookmarksProvider.setData({});
+                  flowBookmarksProvider.refresh();
                 }
               );
             })
@@ -154,6 +154,9 @@ function activate(context) {
               context.globalState.update(BOOKMARKS_STATE_KEY, state);
               updateStatusBarItem(appName);
             });
+        })
+        .then(() => {
+          vscode.commands.executeCommand("setContext", "appLoaded", true);
         });
     }
   };
@@ -175,7 +178,7 @@ function activate(context) {
   context.subscriptions.push(manageJoinedBookmarksCommand);
 
   const searchFlowsCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.searchFlows",
+    "tmp.bookmarks.filterFlows",
     () => {
       vscode.window
         .showInputBox({
@@ -189,19 +192,52 @@ function activate(context) {
           allFlowsTreeDataProvider.refresh();
           vscode.commands.executeCommand(
             "setContext",
-            "filterAllBookmarks",
+            "allFlows.filter",
             !!keywords
           );
         });
     }
   );
   context.subscriptions.push(searchFlowsCommand);
-  const removeBookmarksFilterCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.removeFilter",
+  const removeFlowssFilterCommand = vscode.commands.registerCommand(
+    "tmp.bookmarks.removeFlowsFilter",
     () => {
       allFlowsTreeDataProvider.setFilter("");
       allFlowsTreeDataProvider.refresh();
-      vscode.commands.executeCommand("setContext", "filterAllBookmarks", false);
+      vscode.commands.executeCommand("setContext", "allFlows.filter", false);
+    }
+  );
+  context.subscriptions.push(removeFlowssFilterCommand);
+
+  const filterBookmarksCommand = vscode.commands.registerCommand(
+    "tmp.bookmarks.filterBookmarks",
+    () => {
+      vscode.window
+        .showInputBox({
+          placeHolder: "Enter keywords",
+          prompt: "Search Bookmarks with keywords",
+          value: "",
+          ignoreFocusOut: true,
+        })
+        .then((keywords) => {
+          flowBookmarksProvider.setFilter(keywords);
+          flowBookmarksProvider.refresh();
+          vscode.commands.executeCommand(
+            "setContext",
+            "flowBookmarks.filter",
+            !!keywords
+          );
+        });
+    }
+  );
+  context.subscriptions.push(filterBookmarksCommand);
+
+  const removeBookmarksFilterCommand = vscode.commands.registerCommand(
+    "tmp.bookmarks.removeBookmarksFilter",
+    () => {
+      flowBookmarksProvider.setFilter("");
+      flowBookmarksProvider.refresh();
+      vscode.commands.executeCommand("setContext", "flowBookmarks.filter", false);
     }
   );
   context.subscriptions.push(removeBookmarksFilterCommand);
@@ -268,7 +304,7 @@ function activate(context) {
   context.subscriptions.push(searchFlowsAcrossAppsCommand);
 
   const flowBookmarksProvider = new FlowBookmarksProvider(
-    [],
+    {},
     projectDir,
     context
   );
@@ -283,7 +319,7 @@ function activate(context) {
       appsManager
         .resolveFlow(app, label, flowType)
         .then((bookmarks) => {
-          return [{ flowName: label, bookmarks }];
+          return { flowName: label, bookmarks };
         })
         .then((data) => {
           flowBookmarksProvider.setData(data);
@@ -343,7 +379,11 @@ function activate(context) {
   );
   context.subscriptions.push(copyAppFlowCommand);
   let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
-  updateStatusBarItem(state.activeApp || "None");
+  if (state.activeApp) {
+    loadBookmarksFromApp(state.activeApp);
+  } else {
+    updateStatusBarItem(state.activeApp || "None");
+  }
 }
 
 function updateStatusBarItem(appName) {

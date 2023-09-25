@@ -20,12 +20,14 @@ class AllFlowsProvider {
     basicFlows = Object.keys(basicFlows)
       .filter((flow) => flow.toUpperCase().includes(this.filterValue))
       .sort();
+    let basicData = {
+      label: `Basic Flows ${
+        this.filterValue && `(FILTER: ${this.filterValue})`
+      }`,
+      type: "category",
+      flowType: "basic",
+    };
     if (basicFlows.length > 0) {
-      let basicData = {
-        label: "Basic Flows",
-        type: "category",
-        flowType: "basic",
-      };
       basicData.children = basicFlows.map((flowName, index) => {
         return {
           label: flowName,
@@ -37,15 +39,17 @@ class AllFlowsProvider {
           iconPath,
         };
       });
-      categories.push(basicData);
     }
+    categories.push(basicData);
     joinedFlows = Object.keys(joinedFlows)
       .sort()
       .map((joinedFlow) => {
         return {
           flow: joinedFlow,
-          subflows: joinedFlows[joinedFlow].filter(({ flow, app }) =>
-            flow.toUpperCase().includes(this.filterValue) || app.toUpperCase().includes(this.filterValue)
+          subflows: joinedFlows[joinedFlow].filter(
+            ({ flow, app }) =>
+              flow.toUpperCase().includes(this.filterValue) ||
+              app.toUpperCase().includes(this.filterValue)
           ),
         };
       })
@@ -55,7 +59,9 @@ class AllFlowsProvider {
       );
     if (joinedFlows.length > 0) {
       let joinedData = {
-        label: "Joined Flows",
+        label: `Joined Flows ${
+          this.filterValue && `(FILTER: ${this.filterValue})`
+        }`,
         type: "category",
         flowType: "joined",
       };

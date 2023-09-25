@@ -23,15 +23,9 @@ class AppLoader {
     this.onChangeBookmarksStatus = onChangeBookmarksStatus;
     this.basicFlows;
     this.joinedFlows;
-
-    this.populateBasicFlows = this.populateBasicFlows.bind(this);
-    this.populateJoinedFlows = this.populateJoinedFlows.bind(this);
-    this.loadBookmarks = this.loadBookmarks.bind(this);
-    this.initializeBookmarks = this.initializeBookmarks.bind(this);
-    this.saveBookmarks = this.saveBookmarks.bind(this);
   }
 
-  initializeBookmarks() {
+  initializeBookmarks = () => {
     const fileContent = "{}";
     return fs
       .writeFile(
@@ -47,23 +41,25 @@ class AppLoader {
           error: `Unable to initialize bookmarks for app ${this.appName}`,
         };
       });
-  }
-  loadBookmarks() {
+  };
+  
+  loadBookmarks = () => {
     return fs
       .copyFile(
         path.join(this.projectDir, appsFolder, this.appName, bookmarkFileName),
         path.join(this.projectDir, activeBookmarksPath, bookmarkFileName)
       )
       .then(() => {
-        this.populateBasicFlows();
-        this.populateJoinedFlows();
+        this._populateBasicFlows();
+        this._populateJoinedFlows();
         return { success: `Bookmarks loaded for app ${this.appName}` };
       })
       .catch((err) => {
         return { error: `Unable to Load Bookmarks for app ${this.appName}` };
       });
-  }
-  saveBookmarks() {
+  };
+
+  saveBookmarks = () => {
     return fs
       .copyFile(
         path.join(this.projectDir, activeBookmarksPath, bookmarkFileName),
@@ -75,8 +71,9 @@ class AppLoader {
       .catch((err) => {
         return { error: `Unable to save Bookmarks for app ${this.appName}` };
       });
-  }
-  manageJoinedBookmarks() {
+  };
+
+  manageJoinedBookmarks = () => {
     const filePath = path.join(
       this.projectDir,
       appsFolder,
@@ -88,13 +85,15 @@ class AppLoader {
       .catch((error) => {
         // File does not exist, create it
         return fs.writeFile(filePath, "{}");
-      }).then(() => {
-		return vscode.workspace.openTextDocument(filePath).then((doc) => {
-			vscode.window.showTextDocument(doc);
-		  });
-	  });
-  }
-  populateBasicFlows() {
+      })
+      .then(() => {
+        return vscode.workspace.openTextDocument(filePath).then((doc) => {
+          vscode.window.showTextDocument(doc);
+        });
+      });
+  };
+
+  _populateBasicFlows = () => {
     this.basicFlows = fs
       .readFile(
         path.join(this.projectDir, appsFolder, this.appName, bookmarkFileName),
@@ -126,10 +125,11 @@ class AppLoader {
         });
         return flows;
       });
-  }
-  getBasicFlow(flowName) {
+  };
+
+  getBasicFlow = (flowName) => {
     if (!this.basicFlows) {
-      this.populateBasicFlows();
+      this._populateBasicFlows();
     }
     return this.basicFlows.then((flows) => {
       return (
@@ -143,10 +143,11 @@ class AppLoader {
         ]
       );
     });
-  }
-  getJoinedFlow(flowName) {
+  };
+
+  getJoinedFlow = (flowName) => {
     if (!this.joinedFlows) {
-      this.populateJoinedFlows();
+      this._populateJoinedFlows();
     }
     return this.joinedFlows.then((joinedFlows) => {
       return (
@@ -156,9 +157,9 @@ class AppLoader {
         }
       );
     });
-  }
+  };
 
-  populateJoinedFlows() {
+  _populateJoinedFlows = () => {
     this.joinedFlows = fs
       .readFile(
         path.join(
@@ -175,7 +176,8 @@ class AppLoader {
       .catch((err) => {
         return {};
       });
-  }
+  };
+
   dispose() {
     this.basicFlows = null;
     this.joinedFlows = null;

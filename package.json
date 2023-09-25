@@ -60,19 +60,29 @@
         "icon": "$(json)"
       },
       {
-        "command": "tmp.bookmarks.removeFilter",
+        "command": "tmp.bookmarks.removeFlowsFilter",
         "title": "Disable Filter",
         "icon": "$(search-stop)"
       },
       {
-        "command": "tmp.bookmarks.searchFlows",
+        "command": "tmp.bookmarks.filterFlows",
         "title": "Filter",
         "icon": "$(search)"
       },
       {
-        "command": "tmp.bookmarks.reloadFromApp",
+        "command": "tmp.bookmarks.reloadFlows",
         "title": "Reload Bookmarks from current App",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "tmp.bookmarks.filterBookmarks",
+        "title": "Filter",
+        "icon": "$(search)"
+      },
+      {
+        "command": "tmp.bookmarks.removeBookmarksFilter",
+        "title": "Disable Filter",
+        "icon": "$(search-stop)"
       }
     ],
     "views": {
@@ -92,7 +102,7 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "tmp.bookmarks.reloadFromApp",
+          "command": "tmp.bookmarks.reloadFlows",
           "when": "false"
         },
         {
@@ -100,7 +110,7 @@
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.searchFlows",
+          "command": "tmp.bookmarks.filterFlows",
           "when": "false"
         },
         {
@@ -116,31 +126,53 @@
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.removeFilter",
+          "command": "tmp.bookmarks.removeFlowsFilter",
+          "when": "false"
+        },
+        {
+          "command": "tmp.bookmarks.filterBookmarks",
+          "when": "false"
+        },
+        {
+          "command": "tmp.bookmarks.removeBookmarksFilter",
           "when": "false"
         }
       ],
       "view/title": [
         {
-          "command": "tmp.bookmarks.removeFilter",
-          "when": "view == allFlows && filterAllBookmarks == true",
+          "command": "tmp.bookmarks.removeFlowsFilter",
+          "when": "view == allFlows && allFlows.filter == true",
           "showOn": "always",
           "group": "navigation",
           "order": 1
         },
         {
-          "command": "tmp.bookmarks.searchFlows",
+          "command": "tmp.bookmarks.filterFlows",
           "when": "view == allFlows && appLoaded == true",
           "showOn": "always",
           "group": "navigation",
           "order": 2
         },
         {
-          "command": "tmp.bookmarks.reloadFromApp",
+          "command": "tmp.bookmarks.reloadFlows",
           "when": "view == allFlows && appLoaded == true",
           "showOn": "always",
           "group": "navigation",
           "order": 3
+        },
+        {
+          "command": "tmp.bookmarks.removeBookmarksFilter",
+          "when": "view == flowBookmarks && flowBookmarks.filter == true",
+          "showOn": "always",
+          "group": "navigation",
+          "order": 1
+        },
+        {
+          "command": "tmp.bookmarks.filterBookmarks",
+          "when": "view == flowBookmarks && appLoaded == true",
+          "showOn": "always",
+          "group": "navigation",
+          "order": 2
         }
       ],
       "view/item/context": [
@@ -182,9 +214,6 @@
   ],
   "categories": [
     "Extension Packs"
-  ],
-  "extensionDependencies": [
-    "DeepakPahawa.flowbookmark"
   ],
   "author": "Amit Kumar Garg",
   "license": "ISC",
