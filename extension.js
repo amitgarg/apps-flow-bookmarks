@@ -6,9 +6,12 @@ const AllFlowsProvider = require("./providers/AllFlowsProvider");
 const FlowBookmarksProvider = require("./providers/FlowBookmarksProvider");
 const { AppsManager } = require("./AppsManager");
 const { getJoinFlowConfig } = require("./utils/FileUtils");
+
 const BOOKMARKS_STATE_KEY = "tmpBookmarksState";
 const bookmarkFileName = "multiColorBookmarks.json";
 const joinedBookmarksFileName = "joinedBookmarks.json";
+
+const appsFolder = "packages/apps";
 let myStatusBarItem;
 /**
  * @param {vscode.ExtensionContext} context
@@ -17,7 +20,7 @@ function activate(context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log(
-    'Congratulations, your extension "helloworld-minimal-sample" is now active!'
+    'Congratulations, your extension "tmp-flowwise-bookmarks" is now active!'
   );
 
   const myExtension = vscode.extensions.getExtension(
@@ -47,7 +50,7 @@ function activate(context) {
   );
   context.subscriptions.push(myStatusBarItem);
 
-  const appsManager = new AppsManager(context, projectDir);
+  const appsManager = new AppsManager(context, projectDir, bookmarkFileName, joinedBookmarksFileName, appsFolder);
   context.subscriptions.push(appsManager);
 
   let actionCreateBookmarksForApp = vscode.commands.registerCommand(
@@ -291,7 +294,7 @@ function activate(context) {
             .split(" ")
             .map((keyword) => `(${keyword})`)
             .join("|");
-          const filesToInclude = `**/packages/apps/**/{${bookmarkFileName},${joinedBookmarksFileName}}`;
+          const filesToInclude = `${appsFolder}/**/{${bookmarkFileName},${joinedBookmarksFileName}}`;
           vscode.commands.executeCommand("workbench.action.findInFiles", {
             query,
             filesToInclude,

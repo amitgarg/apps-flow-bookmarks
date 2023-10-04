@@ -4,14 +4,18 @@ const path = require("path");
 const { handleFileCode } = require("./utils/FileUtils");
 const { AppLoader } = require("./AppLoader");
 const { generateGitGraphMarkdown } = require("./utils/DiagramUtils");
-const appsFolder = "packages/apps";
-const bookmarkFileName = "multiColorBookmarks.json";
+
+
 const DIAGRAM_OUTPUT_DIR = "docs/flows";
 const activeBookmarksPath = ".vscode";
+
 class AppsManager {
-  constructor(context, projectDir) {
+  constructor(context, projectDir,bookmarkFileName, joinedBookmarksFileName, appsFolder ) {
     this.context = context;
     this.projectDir = projectDir;
+    this.bookmarkFileName = bookmarkFileName;
+    this.joinedBookmarksFileName = joinedBookmarksFileName;
+    this.appsFolder = appsFolder;
     this.appLoaders = {};
     this.fileCodeUtils = handleFileCode();
     this.apps = [];
@@ -22,8 +26,9 @@ class AppsManager {
       this.appLoaders[appName] = new AppLoader(
         this.context,
         appName,
-        path.join(this.projectDir, appsFolder, appName),
-        path.join(this.projectDir, activeBookmarksPath, bookmarkFileName),
+        path.join(this.projectDir, this.appsFolder, appName, this.bookmarkFileName),
+        path.join(this.projectDir, this.appsFolder, appName, this.joinedBookmarksFileName),
+        path.join(this.projectDir, activeBookmarksPath, this.bookmarkFileName),
         this.fileCodeUtils.getCodeToFileMap,
         this.fileCodeUtils.getFileCode,
         this._changeBookmarksStatus
@@ -38,12 +43,12 @@ class AppsManager {
     }
   };
   _refreshListOfApps() {
-    const folderPath = path.join(this.projectDir, appsFolder);
+    const folderPath = path.join(this.projectDir, this.appsFolder);
     const appDirs = fs.readdirSync(folderPath);
     this.apps = appDirs.map((appDir) => {
       try {
         fs.accessSync(
-          path.join(folderPath, appDir, bookmarkFileName),
+          path.join(folderPath, appDir, this.bookmarkFileName),
           fs.constants.F_OK
         );
         return { label: appDir, hasBookmarks: true };

@@ -1,14 +1,12 @@
 const fs = require("fs").promises;
-const path = require("path");
 const vscode = require("vscode");
-const bookmarkFileName = "multiColorBookmarks.json";
-const joinedBookmarksFileName = "joinedBookmarks.json";
 
 class AppLoader {
   constructor(
     context,
     appName,
-    appPath,
+    appBookmarksFile,
+    joinedBookmarksFile,
     activeBookmarksFile,
     getCodeToFileMap,
     getFileCode,
@@ -16,7 +14,8 @@ class AppLoader {
   ) {
     this.context = context;
     this.appName = appName;
-    this.appPath = appPath;
+    this.appBookmarksFile = appBookmarksFile;
+    this.joinedBookmarksFile = joinedBookmarksFile;
     this.activeBookmarksFile = activeBookmarksFile;
     this.getCodeToFileMap = getCodeToFileMap;
     this.getFileCode = getFileCode;
@@ -46,7 +45,7 @@ class AppLoader {
   loadBookmarks = () => {
     return fs
       .copyFile(
-        path.join(this.appPath, bookmarkFileName),
+        this.appBookmarksFile,
         this.activeBookmarksFile
       )
       .then(() => {
@@ -63,7 +62,7 @@ class AppLoader {
     return fs
       .copyFile(
         this.activeBookmarksFile,
-        path.join(this.appPath, bookmarkFileName)
+        this.appBookmarksFile
       )
       .then(() => {
         return { success: `Bookmarks saved for app ${this.appName}` };
@@ -74,10 +73,7 @@ class AppLoader {
   };
 
   manageJoinedBookmarks = () => {
-    const filePath = path.join(
-      this.appPath,
-      joinedBookmarksFileName
-    );
+    const filePath = this.joinedBookmarksFile;
     return fs
       .access(filePath, fs.constants.F_OK)
       .catch((error) => {
@@ -94,7 +90,7 @@ class AppLoader {
   _populateBasicFlows = () => {
     this.basicFlows = fs
       .readFile(
-        path.join(this.appPath, bookmarkFileName),
+        this.appBookmarksFile,
         "utf8"
       )
       .then((data) => {
@@ -161,10 +157,7 @@ class AppLoader {
   _populateJoinedFlows = () => {
     this.joinedFlows = fs
       .readFile(
-        path.join(
-          this.appPath,
-          joinedBookmarksFileName
-        ),
+        this.joinedBookmarksFile,
         "utf8"
       )
       .then((data) => {
