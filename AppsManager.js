@@ -7,6 +7,7 @@ const { generateGitGraphMarkdown } = require("./utils/DiagramUtils");
 const appsFolder = "packages/apps";
 const bookmarkFileName = "multiColorBookmarks.json";
 const DIAGRAM_OUTPUT_DIR = "docs/flows";
+const activeBookmarksPath = ".vscode";
 class AppsManager {
   constructor(context, projectDir) {
     this.context = context;
@@ -20,8 +21,9 @@ class AppsManager {
     if (!this.appLoaders[appName]) {
       this.appLoaders[appName] = new AppLoader(
         this.context,
-        this.projectDir,
         appName,
+        path.join(this.projectDir, appsFolder, appName),
+        path.join(this.projectDir, activeBookmarksPath, bookmarkFileName),
         this.fileCodeUtils.getCodeToFileMap,
         this.fileCodeUtils.getFileCode,
         this._changeBookmarksStatus

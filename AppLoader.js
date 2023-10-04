@@ -1,23 +1,23 @@
 const fs = require("fs").promises;
 const path = require("path");
 const vscode = require("vscode");
-const appsFolder = "packages/apps";
-const activeBookmarksPath = ".vscode";
 const bookmarkFileName = "multiColorBookmarks.json";
 const joinedBookmarksFileName = "joinedBookmarks.json";
 
 class AppLoader {
   constructor(
     context,
-    projectDir,
     appName,
+    appPath,
+    activeBookmarksFile,
     getCodeToFileMap,
     getFileCode,
     onChangeBookmarksStatus
   ) {
     this.context = context;
-    this.projectDir = projectDir;
     this.appName = appName;
+    this.appPath = appPath;
+    this.activeBookmarksFile = activeBookmarksFile;
     this.getCodeToFileMap = getCodeToFileMap;
     this.getFileCode = getFileCode;
     this.onChangeBookmarksStatus = onChangeBookmarksStatus;
@@ -29,7 +29,7 @@ class AppLoader {
     const fileContent = "{}";
     return fs
       .writeFile(
-        path.join(this.projectDir, activeBookmarksPath, bookmarkFileName),
+        this.activeBookmarksFile,
         fileContent
       )
       .then(() => {
@@ -46,8 +46,8 @@ class AppLoader {
   loadBookmarks = () => {
     return fs
       .copyFile(
-        path.join(this.projectDir, appsFolder, this.appName, bookmarkFileName),
-        path.join(this.projectDir, activeBookmarksPath, bookmarkFileName)
+        path.join(this.appPath, bookmarkFileName),
+        this.activeBookmarksFile
       )
       .then(() => {
         this._populateBasicFlows();
@@ -62,8 +62,8 @@ class AppLoader {
   saveBookmarks = () => {
     return fs
       .copyFile(
-        path.join(this.projectDir, activeBookmarksPath, bookmarkFileName),
-        path.join(this.projectDir, appsFolder, this.appName, bookmarkFileName)
+        this.activeBookmarksFile,
+        path.join(this.appPath, bookmarkFileName)
       )
       .then(() => {
         return { success: `Bookmarks saved for app ${this.appName}` };
@@ -75,9 +75,7 @@ class AppLoader {
 
   manageJoinedBookmarks = () => {
     const filePath = path.join(
-      this.projectDir,
-      appsFolder,
-      this.appName,
+      this.appPath,
       joinedBookmarksFileName
     );
     return fs
@@ -96,7 +94,7 @@ class AppLoader {
   _populateBasicFlows = () => {
     this.basicFlows = fs
       .readFile(
-        path.join(this.projectDir, appsFolder, this.appName, bookmarkFileName),
+        path.join(this.appPath, bookmarkFileName),
         "utf8"
       )
       .then((data) => {
@@ -135,7 +133,8 @@ class AppLoader {
       return (
         flows[flowName] || [
           {
-            description: "--- BOOKMARK_NOT_FOUND ---",
+            code: "FLOW_NOT_FOUND",
+            description: "--- FLOW_NOT_FOUND ---",
             path: "",
             fileName: "file-not-found",
             lineNumber: 0,
@@ -163,9 +162,7 @@ class AppLoader {
     this.joinedFlows = fs
       .readFile(
         path.join(
-          this.projectDir,
-          appsFolder,
-          this.appName,
+          this.appPath,
           joinedBookmarksFileName
         ),
         "utf8"

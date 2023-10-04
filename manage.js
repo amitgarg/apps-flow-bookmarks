@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const appsFolder = 'packages/apps';
 const activeBookmarksPath = '.vscode';
-const bookmarkFileName = 'multiColorBookmarks.json';
 const configFileName = 'tmpBookmarks.json';
 
 const loadState = (projectDir) => {

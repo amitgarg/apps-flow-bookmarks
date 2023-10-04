@@ -4,6 +4,10 @@ const iconPath = {
   light: path.join(__filename, "../..", "images", "bookmark.svg"),
   dark: path.join(__filename, "../..", "images", "bookmark.svg"),
 };
+const missingBookmarkIconPath = {
+  light: path.join(__filename, "../..", "images", "bookmark-missing.svg"),
+  dark: path.join(__filename, "../..", "images", "bookmark-missing.svg"),
+};
 class FlowBookmarksProvider {
   constructor(flow, projectDir) {
     this._onDidChangeTreeData = new vscode.EventEmitter();
@@ -23,7 +27,7 @@ class FlowBookmarksProvider {
       };
       data.children = bookmarks.map((bookmark, index) => {
         let lineNumber = parseInt(bookmark.lineNumber) + 1;
-        return {
+        let bookmarkElement =  {
           label: `${index}.${bookmark.description}`,
           description: `${bookmark.fileName} - ${lineNumber}`,
           text: bookmark.text,
@@ -43,6 +47,7 @@ class FlowBookmarksProvider {
             ],
           },
         };
+        return bookmarkElement;
       });
       return [data];
     }
@@ -89,6 +94,10 @@ class FlowBookmarksProvider {
       item.contextValue = "bookmark";
       item.iconPath = iconPath;
       item.resourceUri = vscode.Uri.file(element.path);
+      if(!element.path){
+        item.color = "#FF0000";
+        item.iconPath = missingBookmarkIconPath;
+      }
     } else {
       item.contextValue = "flow";
     }
