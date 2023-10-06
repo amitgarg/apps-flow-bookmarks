@@ -4,18 +4,16 @@ const path = require("path");
 const { handleFileCode } = require("./utils/FileUtils");
 const { AppLoader } = require("./AppLoader");
 const { generateGitGraphMarkdown } = require("./utils/DiagramUtils");
-
-
-const DIAGRAM_OUTPUT_DIR = "docs/flows";
-const activeBookmarksPath = ".vscode";
-
+const {FlowType} = require("./utils/Constants");
 class AppsManager {
-  constructor(context, projectDir,bookmarkFileName, joinedBookmarksFileName, appsFolder ) {
+  constructor(context, projectDir,bookmarkFileName, joinedBookmarksFileName, appsFolder,activeBookmarksPath, diagramOutputDir ) {
     this.context = context;
     this.projectDir = projectDir;
     this.bookmarkFileName = bookmarkFileName;
     this.joinedBookmarksFileName = joinedBookmarksFileName;
     this.appsFolder = appsFolder;
+    this.activeBookmarksPath = activeBookmarksPath;
+    this.diagramOutputDir = diagramOutputDir;
     this.appLoaders = {};
     this.fileCodeUtils = handleFileCode();
     this.apps = [];
@@ -28,7 +26,7 @@ class AppsManager {
         appName,
         path.join(this.projectDir, this.appsFolder, appName, this.bookmarkFileName),
         path.join(this.projectDir, this.appsFolder, appName, this.joinedBookmarksFileName),
-        path.join(this.projectDir, activeBookmarksPath, this.bookmarkFileName),
+        path.join(this.projectDir, this.activeBookmarksPath, this.bookmarkFileName),
         this.fileCodeUtils.getCodeToFileMap,
         this.fileCodeUtils.getFileCode,
         this._changeBookmarksStatus
@@ -75,7 +73,7 @@ class AppsManager {
     return this.getAppLoader(appName).getBasicFlow(flowName);
   };
   resolveFlow = (appName, flowName, flowType) => {
-    return flowType === "basic"
+    return flowType === FlowType.BASIC
       ? this._resolveBasicFlow(appName, flowName)
       : this._resolveJoinedFlow(appName, flowName);
   };
@@ -98,7 +96,7 @@ class AppsManager {
       .then((markdown) => {
         const outputFile = path.join(
           this.projectDir,
-          DIAGRAM_OUTPUT_DIR,
+          this.diagramOutputDir,
           appName,
           `${flowType}-${flowName}.md`
         );

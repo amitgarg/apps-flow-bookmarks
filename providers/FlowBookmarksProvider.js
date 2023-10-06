@@ -91,16 +91,14 @@ class FlowBookmarksProvider {
     if (element.type === "bookmark") {
       item.command = element.command;
       item.description = element.description;
-      item.contextValue = "bookmark";
       item.iconPath = iconPath;
       item.resourceUri = vscode.Uri.file(element.path);
       if(!element.path){
         item.color = "#FF0000";
         item.iconPath = missingBookmarkIconPath;
       }
-    } else {
-      item.contextValue = "flow";
     }
+    item.contextValue = element.type;
     return item;
   }
 

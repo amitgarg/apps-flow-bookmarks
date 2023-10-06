@@ -32,6 +32,8 @@ class AppLoader {
         fileContent
       )
       .then(() => {
+        this.basicFlows={};
+        this.joinedFlows={};
         this.onChangeBookmarksStatus(this.appName, true);
         return { success: `Bookmarks initialized for app ${this.appName}` };
       })
@@ -42,7 +44,10 @@ class AppLoader {
       });
   };
   
-  loadBookmarks = () => {
+  loadBookmarks = (intialize) => {
+    if(intialize){
+      return this.initializeBookmarks();
+    }
     return fs
       .copyFile(
         this.appBookmarksFile,

@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const path = require("path");
+const { FlowType } = require("../utils/Constants");
 const BASIC_FLOWS_KEY = "Basic Flows";
 const iconPath = {
   light: path.join(__filename, "../..", "images", "flow1.svg"),
@@ -25,7 +26,7 @@ class AllFlowsProvider {
         this.filterValue && `(FILTER: ${this.filterValue})`
       }`,
       type: "category",
-      flowType: "basic",
+      flowType: FlowType.BASIC,
     };
     if (basicFlows.length > 0) {
       basicData.children = basicFlows.map((flowName, index) => {
@@ -34,7 +35,7 @@ class AllFlowsProvider {
           tooltip: flowName,
           type: "flow",
           app: appName,
-          flowType: "basic",
+          flowType: FlowType.BASIC,
           contextValue: "show,diagram,copyJson",
           iconPath,
         };
@@ -63,7 +64,7 @@ class AllFlowsProvider {
           this.filterValue && `(FILTER: ${this.filterValue})`
         }`,
         type: "category",
-        flowType: "joined",
+        flowType: FlowType.JOINED,
       };
       joinedData.children = joinedFlows.map(({ flow, subflows }) => {
         let data = {
@@ -71,7 +72,7 @@ class AllFlowsProvider {
           tooltip: flow,
           type: "flow",
           app: appName,
-          flowType: "joined",
+          flowType: FlowType.JOINED,
           contextValue: "show,diagram,copyJson",
           iconPath,
         };
@@ -80,10 +81,10 @@ class AllFlowsProvider {
             label: flow,
             description: app,
             app: app,
-            flowType: "basic",
+            flowType: FlowType.BASIC,
             tooltip: `${app} : ${flow}`,
             type: "subflow",
-            contextValue: "show,copyJson",
+            contextValue: "show,diagram,copyJson",
             iconPath,
           };
         });
@@ -109,12 +110,12 @@ class AllFlowsProvider {
     let treeItemType;
     if (element.type === "category") {
       treeItemType =
-        !this.filterValue && element.flowType == "basic"
+        !this.filterValue && element.flowType == FlowType.BASIC
           ? vscode.TreeItemCollapsibleState.Collapsed
           : vscode.TreeItemCollapsibleState.Expanded;
     } else if (element.type === "flow") {
       treeItemType =
-        element.flowType == "basic" || element.children.length == 0
+        element.flowType == FlowType.BASIC || element.children.length == 0
           ? vscode.TreeItemCollapsibleState.None
           : this.filterValue
           ? vscode.TreeItemCollapsibleState.Collapsed
