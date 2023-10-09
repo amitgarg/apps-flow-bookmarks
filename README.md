@@ -1,8 +1,8 @@
-# TMP Flow-wise Bookmarks
+# Apps Flow-wise Bookmarks
 
-TMP Flow-wise Bookmarks is a VS Code extension that provides bookmarking functionality for your user flows. This extension works along with the [Multi Color Bookmarks FlowWise (MCB) ](https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark) extension.
+Apps Flow-wise Bookmarks is a VS Code extension that provides bookmarking functionality for your user flows. This extension works along with the [Multi Color Bookmarks FlowWise (MCB) ](https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark) extension.
 
-Since TMP code is designed around apps (eg:apps-calendar, apps-chat etc). This extesion provides functionalities to manage bookmarks specific to Apps. 
+Since every code is designed around apps (Independent resource, service, UI area). This extesion provides functionalities to manage bookmarks specific to Apps. 
 
 At at time only 1 App remains active for bookmarking. You can switch between apps using the `TMP:Load Bookmarks from an App` command.
 
@@ -33,7 +33,7 @@ This command searches flows across apps with keywords. To use this command, run 
 The space separated keywords are coverted to OR query. (keyword1)|(keyword2)
 Following type of keywords are supported. 
     - file name
-    - text or any tags in flow name (any tags which can be agreed on Teams level)
+    - text or any tags in flow name (any tags which can be agreed on team level)
     - app name (in joined flows as well)
 
 ### Views Contributed
@@ -50,7 +50,7 @@ Following type of keywords are supported.
     - Lists all Basic and Joined flows
     - Reload all flows from the app again (affects all views)
     - Search flows in the app with  (matches any of below)
-        - text or any tags in flow name (any tags which can be agreed on Teams level)
+        - text or any tags in flow name (any tags which can be agreed on team level)
         - app name (for joined flows)
     - Copy JSON snippet for a flow ( these snippets can be used to configure joined flows in joinedBookmarks.json)
     - Generate Git Graph diagram of the flow
