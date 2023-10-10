@@ -380,6 +380,8 @@ function activate(context) {
   if (state.activeApp) {
     loadBookmarksFromApp(state.activeApp);
   } else {
+    vscode.commands
+        .executeCommand("flowbookmark.clearAll");
     updateStatusBarItem(state.activeApp || "None");
   }
 }
