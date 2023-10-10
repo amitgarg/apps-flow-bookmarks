@@ -58,14 +58,15 @@ class AllFlowsProvider {
         ({ flow, subflows }) =>
           flow.toUpperCase().includes(this.filterValue) || subflows.length > 0
       );
+    let joinedData = {
+      label: `Joined Flows ${
+        this.filterValue && `(FILTER: ${this.filterValue})`
+      }`,
+      type: "category",
+      flowType: FlowType.JOINED,
+      contextValue: "manageFlows",
+    };
     if (joinedFlows.length > 0) {
-      let joinedData = {
-        label: `Joined Flows ${
-          this.filterValue && `(FILTER: ${this.filterValue})`
-        }`,
-        type: "category",
-        flowType: FlowType.JOINED,
-      };
       joinedData.children = joinedFlows.map(({ flow, subflows }) => {
         let data = {
           label: flow,
@@ -90,8 +91,8 @@ class AllFlowsProvider {
         });
         return data;
       });
-      categories.push(joinedData);
     }
+    categories.push(joinedData);
     return categories;
   }
   setData(joinedFlowsData) {

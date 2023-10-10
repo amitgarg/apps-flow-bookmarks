@@ -13,6 +13,12 @@
     "onCommand:tmp.bookmarks.searchFlowsAcross"
   ],
   "contributes": {
+    "snippets": [
+      {
+        "language": "json",
+        "path": "./snippets/json.json"
+      }
+    ],
     "commands": [
       {
         "command": "tmp.bookmarks.loadFromApp",
@@ -27,7 +33,8 @@
       {
         "command": "tmp.bookmarks.manageJoinedBookmarks",
         "title": "Manage Joined Flows for an App",
-        "category": "TMP"
+        "category": "TMP",
+        "icon": "$(edit)"
       },
       {
         "command": "tmp.bookmarks.saveForApp",
@@ -180,6 +187,11 @@
           "command": "tmp.bookmarks.openFileToLine",
           "group": "navigation",
           "when": "view == flowBookmarks && viewItem == bookmark"
+        },
+        {
+          "command": "tmp.bookmarks.manageJoinedBookmarks",
+          "group": "inline",
+          "when": "view == allFlows && viewItem == manageFlows"
         },
         {
           "command": "tmp.bookmarks.openFlow",

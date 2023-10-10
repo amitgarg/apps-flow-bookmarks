@@ -160,7 +160,12 @@ function activate(context) {
 
   const manageJoinedBookmarksCommand = vscode.commands.registerCommand(
     "tmp.bookmarks.manageJoinedBookmarks",
-    () => {
+    (flowInfo) => {
+      if(flowInfo && flowInfo.flowType === FlowType.JOINED){
+        let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
+        const appLoader = appsManager.getAppLoader(state.activeApp);
+          appLoader.manageJoinedBookmarks();
+      }else{
       vscode.window
         .showQuickPick(appsManager.getAppsWithBookmarks(), {
           placeHolder: "Select an App",
@@ -170,6 +175,7 @@ function activate(context) {
           const appLoader = appsManager.getAppLoader(appName);
           appLoader.manageJoinedBookmarks();
         });
+      }
     }
   );
   context.subscriptions.push(manageJoinedBookmarksCommand);

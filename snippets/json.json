@@ -1,0 +1,14 @@
+{
+  "My Custom Snippet": {
+    "prefix": "joinedFlow",
+    "body": [
+      "\t\"${1:joinedFlowName}\": [",
+      "\t\t{",
+      "\t\t\t\"app\": \"${2:appName}\",",
+      "\t\t\t\"flow\": \"${3:flowName}\"",
+      "\t\t}",
+      "\t]"
+    ],
+    "description": "My custom snippet"
+  }
+}
