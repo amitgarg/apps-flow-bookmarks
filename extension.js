@@ -1,14 +1,12 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
-const { loadState, saveState } = require("./manage");
+// const { loadState, saveState } = require("./manage");
 const AllFlowsProvider = require("./providers/AllFlowsProvider");
 const FlowBookmarksProvider = require("./providers/FlowBookmarksProvider");
 const { AppsManager } = require("./AppsManager");
 const { getJoinFlowConfig } = require("./utils/FileUtils");
 const { FlowType } = require("./utils/Constants");
 
-const BOOKMARKS_STATE_KEY = "tmpBookmarksState";
+const BOOKMARKS_STATE_KEY = "acnBookmarksState";
 const bookmarkFileName = "multiColorBookmarks.json";
 const joinedBookmarksFileName = "joinedBookmarks.json";
 const activeBookmarksPath = ".vscode";
@@ -22,7 +20,7 @@ function activate(context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log(
-    'Congratulations, your extension "apps-flowwise-bookmarks" is now active!'
+    'Congratulations, your extension "appwise-code-navigator" is now active!'
   );
 
   const myExtension = vscode.extensions.getExtension(
@@ -63,11 +61,14 @@ function activate(context) {
   );
   context.subscriptions.push(appsManager);
 
-  const allFlowsTreeDataProvider = new AllFlowsProvider({
+  const defaultAllFlowsProviderData = {
     joinedFlows: {},
     appName: "None",
     basicFlows: {},
-  });
+  };
+  const allFlowsTreeDataProvider = new AllFlowsProvider(
+    defaultAllFlowsProviderData
+  );
   const allFlowsTreeView = vscode.window.createTreeView("allFlows", {
     treeDataProvider: allFlowsTreeDataProvider,
   });
@@ -83,8 +84,26 @@ function activate(context) {
   });
   context.subscriptions.push(flowBookmarksTreeView);
 
+  // Whenever switch to a different branch, which might have different bookmarks, it is better to run this command.
+  let actionReset = vscode.commands.registerCommand(
+    "acn.bookmarks.reset",
+    () => {
+      appsManager.reset();
+      allFlowsTreeDataProvider.setData(defaultAllFlowsProviderData);
+      allFlowsTreeDataProvider.refresh();
+      flowBookmarksProvider.setData({});
+      flowBookmarksProvider.refresh();
+      vscode.commands.executeCommand("flowbookmark.clearAll");
+      updateStatusBarItem("None");
+      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
+      state.activeApp = "None";
+      context.globalState.update(BOOKMARKS_STATE_KEY, state);
+    }
+  );
+  context.subscriptions.push(actionReset);
+
   let actionCreateBookmarksForApp = vscode.commands.registerCommand(
-    "tmp.bookmarks.initializeForApp",
+    "acn.bookmarks.initializeForApp",
     () => {
       vscode.window
         .showQuickPick(appsManager.getAppsWithoutBookmarks(), {
@@ -99,7 +118,7 @@ function activate(context) {
   context.subscriptions.push(actionCreateBookmarksForApp);
 
   let actionLoadBookmarksForApp = vscode.commands.registerCommand(
-    "tmp.bookmarks.loadFromApp",
+    "acn.bookmarks.loadFromApp",
     () => {
       vscode.window
         .showQuickPick(appsManager.getAppsWithBookmarks(), {
@@ -112,7 +131,7 @@ function activate(context) {
   context.subscriptions.push(actionLoadBookmarksForApp);
 
   let actionReloadBookmarksForApp = vscode.commands.registerCommand(
-    "tmp.bookmarks.reloadFlows",
+    "acn.bookmarks.reloadFlows",
     () => {
       let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
       loadBookmarksFromApp(state.activeApp);
@@ -159,29 +178,29 @@ function activate(context) {
   };
 
   const manageJoinedBookmarksCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.manageJoinedBookmarks",
+    "acn.bookmarks.manageJoinedBookmarks",
     (flowInfo) => {
-      if(flowInfo && flowInfo.flowType === FlowType.JOINED){
+      if (flowInfo && flowInfo.flowType === FlowType.JOINED) {
         let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
         const appLoader = appsManager.getAppLoader(state.activeApp);
-          appLoader.manageJoinedBookmarks();
-      }else{
-      vscode.window
-        .showQuickPick(appsManager.getAppsWithBookmarks(), {
-          placeHolder: "Select an App",
-          title: "Manage Joined Flows for App",
-        })
-        .then((appName) => {
-          const appLoader = appsManager.getAppLoader(appName);
-          appLoader.manageJoinedBookmarks();
-        });
+        appLoader.manageJoinedBookmarks();
+      } else {
+        vscode.window
+          .showQuickPick(appsManager.getAppsWithBookmarks(), {
+            placeHolder: "Select an App",
+            title: "Manage Joined Flows for App",
+          })
+          .then((appName) => {
+            const appLoader = appsManager.getAppLoader(appName);
+            appLoader.manageJoinedBookmarks();
+          });
       }
     }
   );
   context.subscriptions.push(manageJoinedBookmarksCommand);
 
   const searchFlowsCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.filterFlows",
+    "acn.bookmarks.filterFlows",
     () => {
       vscode.window
         .showInputBox({
@@ -204,7 +223,7 @@ function activate(context) {
   context.subscriptions.push(searchFlowsCommand);
 
   const removeFlowsFilterCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.removeFlowsFilter",
+    "acn.bookmarks.removeFlowsFilter",
     () => {
       allFlowsTreeDataProvider.setFilter("");
       allFlowsTreeDataProvider.refresh();
@@ -214,7 +233,7 @@ function activate(context) {
   context.subscriptions.push(removeFlowsFilterCommand);
 
   const filterBookmarksCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.filterBookmarks",
+    "acn.bookmarks.filterBookmarks",
     () => {
       vscode.window
         .showInputBox({
@@ -237,7 +256,7 @@ function activate(context) {
   context.subscriptions.push(filterBookmarksCommand);
 
   const removeBookmarksFilterCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.removeBookmarksFilter",
+    "acn.bookmarks.removeBookmarksFilter",
     () => {
       flowBookmarksProvider.setFilter("");
       flowBookmarksProvider.refresh();
@@ -251,7 +270,7 @@ function activate(context) {
   context.subscriptions.push(removeBookmarksFilterCommand);
 
   const openFileToLineCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.openFileToLine",
+    "acn.bookmarks.openFileToLine",
     (filePath, lineNumber) => {
       if (filePath) {
         let line = parseInt(lineNumber);
@@ -266,7 +285,7 @@ function activate(context) {
   context.subscriptions.push(openFileToLineCommand);
 
   let actionSaveActiveBookmarksToAnApp = vscode.commands.registerCommand(
-    "tmp.bookmarks.saveForApp",
+    "acn.bookmarks.saveForApp",
     () => {
       let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
       if (state.activeApp) {
@@ -285,7 +304,7 @@ function activate(context) {
   context.subscriptions.push(actionSaveActiveBookmarksToAnApp);
 
   const searchFlowsAcrossAppsCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.searchFlowsAcross",
+    "acn.bookmarks.searchFlowsAcross",
     () => {
       vscode.window
         .showInputBox({
@@ -312,7 +331,7 @@ function activate(context) {
   context.subscriptions.push(searchFlowsAcrossAppsCommand);
 
   const openFlowCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.openFlow",
+    "acn.bookmarks.openFlow",
     ({ label, app, flowType }) => {
       appsManager
         .resolveFlow(app, label, flowType)
@@ -328,7 +347,7 @@ function activate(context) {
   context.subscriptions.push(openFlowCommand);
 
   const createDiagramCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.diagram",
+    "acn.bookmarks.diagram",
     ({ label, flowType, app }) => {
       appsManager.generateDiagram(app, label, flowType).then((path) => {
         if (path) {
@@ -344,7 +363,7 @@ function activate(context) {
   context.subscriptions.push(createDiagramCommand);
 
   const copyAppFlowCommand = vscode.commands.registerCommand(
-    "tmp.bookmarks.copyAppFlow",
+    "acn.bookmarks.copyAppFlow",
     ({ label, flowType, app }) => {
       let textToCopyPromise;
       if (flowType === FlowType.JOINED) {
@@ -380,8 +399,7 @@ function activate(context) {
   if (state.activeApp) {
     loadBookmarksFromApp(state.activeApp);
   } else {
-    vscode.commands
-        .executeCommand("flowbookmark.clearAll");
+    vscode.commands.executeCommand("flowbookmark.clearAll");
     updateStatusBarItem(state.activeApp || "None");
   }
 }

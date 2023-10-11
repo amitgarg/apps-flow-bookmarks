@@ -39,7 +39,7 @@ class FlowBookmarksProvider {
           contextValue: "file",
           type: "bookmark",
           command: {
-            command: "tmp.bookmarks.openFileToLine",
+            command: "acn.bookmarks.openFileToLine",
             title: "Open File",
             arguments: [
               bookmark.path && path.join(this.projectDir, bookmark.path),

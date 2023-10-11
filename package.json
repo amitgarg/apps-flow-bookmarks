@@ -1,12 +1,13 @@
 {
-  "name": "apps-flowwise-bookmarks",
+  "name": "appwise-code-navigator",
   "version": "1.0.0",
-  "description": "vscode extension to create flow-wise bookmarks categorized in apps",
+  "displayName": "Appwise Code Navigator",
+  "description": "vscode extension to create flow-wise bookmarks categorized in apps, helps you navigate and debug large and complex code repositories",
   "main": "extension.js",
   "engines": {
     "vscode": "^1.74.0"
   },
-  "publisher": "amitkumargarg",
+  "publisher": "AmitKumarGarg",
   "activationEvents": [
     "onCommand:tmp.bookmarks.loadFromApp",
     "onCommand:tmp.bookmarks.initializeForApp",
@@ -21,73 +22,78 @@
     ],
     "commands": [
       {
-        "command": "tmp.bookmarks.loadFromApp",
+        "command": "acn.bookmarks.reset",
+        "title": "Reset",
+        "category": "ACN"
+      },
+      {
+        "command": "acn.bookmarks.loadFromApp",
         "title": "Load Bookmarks from an App",
-        "category": "TMP"
+        "category": "ACN"
       },
       {
-        "command": "tmp.bookmarks.initializeForApp",
+        "command": "acn.bookmarks.initializeForApp",
         "title": "Initialize Bookmarks for an App",
-        "category": "TMP"
+        "category": "ACN"
       },
       {
-        "command": "tmp.bookmarks.manageJoinedBookmarks",
+        "command": "acn.bookmarks.manageJoinedBookmarks",
         "title": "Manage Joined Flows for an App",
-        "category": "TMP",
+        "category": "ACN",
         "icon": "$(edit)"
       },
       {
-        "command": "tmp.bookmarks.saveForApp",
+        "command": "acn.bookmarks.saveForApp",
         "title": "Save Bookmarks for App",
-        "category": "TMP"
+        "category": "ACN"
       },
       {
-        "command": "tmp.bookmarks.searchFlowsAcross",
+        "command": "acn.bookmarks.searchFlowsAcross",
         "title": "Search Flows Across Apps with keywords",
-        "category": "TMP"
+        "category": "ACN"
       },
       {
-        "command": "tmp.bookmarks.openFileToLine",
+        "command": "acn.bookmarks.openFileToLine",
         "title": "Open File to Line",
         "icon": "${symbol-class}"
       },
       {
-        "command": "tmp.bookmarks.openFlow",
+        "command": "acn.bookmarks.openFlow",
         "title": "Render Flow",
         "icon": "$(symbol-class)"
       },
       {
-        "command": "tmp.bookmarks.diagram",
+        "command": "acn.bookmarks.diagram",
         "title": "Export Diagram",
         "icon": "$(preview)"
       },
       {
-        "command": "tmp.bookmarks.copyAppFlow",
+        "command": "acn.bookmarks.copyAppFlow",
         "title": "Copy Json Snippet",
         "icon": "$(json)"
       },
       {
-        "command": "tmp.bookmarks.removeFlowsFilter",
+        "command": "acn.bookmarks.removeFlowsFilter",
         "title": "Disable Filter",
         "icon": "$(search-stop)"
       },
       {
-        "command": "tmp.bookmarks.filterFlows",
+        "command": "acn.bookmarks.filterFlows",
         "title": "Filter",
         "icon": "$(search)"
       },
       {
-        "command": "tmp.bookmarks.reloadFlows",
+        "command": "acn.bookmarks.reloadFlows",
         "title": "Reload Bookmarks from current App",
         "icon": "$(refresh)"
       },
       {
-        "command": "tmp.bookmarks.filterBookmarks",
+        "command": "acn.bookmarks.filterBookmarks",
         "title": "Filter",
         "icon": "$(search)"
       },
       {
-        "command": "tmp.bookmarks.removeBookmarksFilter",
+        "command": "acn.bookmarks.removeBookmarksFilter",
         "title": "Disable Filter",
         "icon": "$(search-stop)"
       }
@@ -109,73 +115,73 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "tmp.bookmarks.reloadFlows",
+          "command": "acn.bookmarks.reloadFlows",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.openFileToLine",
+          "command": "acn.bookmarks.openFileToLine",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.filterFlows",
+          "command": "acn.bookmarks.filterFlows",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.openFlow",
+          "command": "acn.bookmarks.openFlow",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.diagram",
+          "command": "acn.bookmarks.diagram",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.copyAppFlow",
+          "command": "acn.bookmarks.copyAppFlow",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.removeFlowsFilter",
+          "command": "acn.bookmarks.removeFlowsFilter",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.filterBookmarks",
+          "command": "acn.bookmarks.filterBookmarks",
           "when": "false"
         },
         {
-          "command": "tmp.bookmarks.removeBookmarksFilter",
+          "command": "acn.bookmarks.removeBookmarksFilter",
           "when": "false"
         }
       ],
       "view/title": [
         {
-          "command": "tmp.bookmarks.removeFlowsFilter",
+          "command": "acn.bookmarks.removeFlowsFilter",
           "when": "view == allFlows && allFlows.filter == true",
           "showOn": "always",
           "group": "navigation",
           "order": 1
         },
         {
-          "command": "tmp.bookmarks.filterFlows",
+          "command": "acn.bookmarks.filterFlows",
           "when": "view == allFlows && appLoaded == true",
           "showOn": "always",
           "group": "navigation",
           "order": 2
         },
         {
-          "command": "tmp.bookmarks.reloadFlows",
+          "command": "acn.bookmarks.reloadFlows",
           "when": "view == allFlows && appLoaded == true",
           "showOn": "always",
           "group": "navigation",
           "order": 3
         },
         {
-          "command": "tmp.bookmarks.removeBookmarksFilter",
+          "command": "acn.bookmarks.removeBookmarksFilter",
           "when": "view == flowBookmarks && flowBookmarks.filter == true",
           "showOn": "always",
           "group": "navigation",
           "order": 1
         },
         {
-          "command": "tmp.bookmarks.filterBookmarks",
+          "command": "acn.bookmarks.filterBookmarks",
           "when": "view == flowBookmarks && appLoaded == true",
           "showOn": "always",
           "group": "navigation",
@@ -184,27 +190,27 @@
       ],
       "view/item/context": [
         {
-          "command": "tmp.bookmarks.openFileToLine",
+          "command": "acn.bookmarks.openFileToLine",
           "group": "navigation",
           "when": "view == flowBookmarks && viewItem == bookmark"
         },
         {
-          "command": "tmp.bookmarks.manageJoinedBookmarks",
+          "command": "acn.bookmarks.manageJoinedBookmarks",
           "group": "inline",
           "when": "view == allFlows && viewItem == manageFlows"
         },
         {
-          "command": "tmp.bookmarks.openFlow",
+          "command": "acn.bookmarks.openFlow",
           "group": "inline",
           "when": "view == allFlows && viewItem =~ /show/"
         },
         {
-          "command": "tmp.bookmarks.diagram",
+          "command": "acn.bookmarks.diagram",
           "group": "inline",
           "when": "view == allFlows && viewItem =~ /diagram/"
         },
         {
-          "command": "tmp.bookmarks.copyAppFlow",
+          "command": "acn.bookmarks.copyAppFlow",
           "group": "inline",
           "when": "view == allFlows && viewItem =~ /copyJson/"
         }
@@ -216,21 +222,27 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amitgarg/apps-flow-bookmarks.git"
+    "url": "git+https://github.com/amitgarg/appwise-code-navigator.git"
   },
   "keywords": [
-    "apps",
+    "flow",
+    "userflow",
+    "codeflow",
     "flowwise",
-    "bookmarks",
+    "bookmark",
+    "debug",
+    "document",
+    "breakpoint",
     "diagram"
   ],
   "categories": [
     "Extension Packs"
   ],
-  "author": "Amit Kumar Garg",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/amitgarg/apps-flow-bookmarks/issues"
+  "author": {
+    "name": "Amit Kumar Garg"
   },
-  "homepage": "https://github.com/amitgarg/apps-flow-bookmarks#readme"
+  "bugs": {
+    "url": "https://github.com/amitgarg/appwise-code-navigator.git/issues"
+  },
+  "homepage": "https://github.com/amitgarg/appwise-code-navigator.git#readme"
 }

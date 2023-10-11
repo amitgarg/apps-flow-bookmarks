@@ -19,6 +19,11 @@ class AppsManager {
     this.apps = [];
     this._refreshListOfApps();
   }
+
+  reset = () => {
+    this.appLoaders = {};
+    this._refreshListOfApps();
+  }
   getAppLoader = (appName) => {
     if (!this.appLoaders[appName]) {
       this.appLoaders[appName] = new AppLoader(

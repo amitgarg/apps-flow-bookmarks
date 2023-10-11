@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const activeBookmarksPath = '.vscode';
-const configFileName = 'tmpBookmarks.json';
+const configFileName = 'bookmarks.json';
 
 const loadState = (projectDir) => {
 	const configPath = path.join(projectDir, activeBookmarksPath, configFileName);

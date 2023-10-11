@@ -1,10 +1,10 @@
-# Apps Flow-wise Bookmarks
+# Appwise Code Navigator
 
-Apps Flow-wise Bookmarks is a VS Code extension that provides bookmarking functionality for your user flows. This extension works along with the [Multi Color Bookmarks FlowWise (MCB) ](https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark) extension.
+Appwise Code Navigator is a VS Code extension that provides bookmarking functionality for your user flows. This extension works along with the [Multi Color Bookmarks FlowWise (MCB) ](https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark) extension.
 
-Since every code is designed around apps (Independent resource, service, UI area). This extesion provides functionalities to manage bookmarks specific to Apps. 
+Since every code is designed around apps (Independent resource, service, UI area). This extesion provides functionalities to manage flowwise bookmarks specific to Apps. 
 
-At at time only 1 App remains active for bookmarking. You can switch between apps using the `TMP:Load Bookmarks from an App` command.
+At at time only 1 App remains active for bookmarking. You can switch between apps using the `ACN:Load Bookmarks from an App` command.
 
 There are 2 types of flows supported:
 - Basic Flows : flows specific to the app (saved in `packages/apps/{apps-name}/multiColorBookmarks.json`)
@@ -15,26 +15,29 @@ Both of these above file types should be checked-in to repo, to make sure that b
 ## Features
 ### Commands contributed to Command Palette
 
-- `TMP: Load Bookmarks from an App`
+- `ACN: Load Bookmarks from an App`
 This command loads bookmarks from an app. To use this command, run the command directly.
 
-- `TMP: Initialize Bookmarks for an App`
+- `ACN: Initialize Bookmarks for an App`
 This command initializes bookmarks for an app. creates multiColorBookmarks.json in the respective *apps/{apps-name}* directory. To use this command, run the command directly.
 
-- `TMP: Save Bookmarks for App`
+- `ACN: Save Bookmarks for App`
 This command saves bookmarks for the active app. To use this command, run the command directly.
 
-- `TMP: Manage Joined Flows for an App`
+- `ACN: Manage Joined Flows for an App`
 This command manages joined flows for an app. To use this command, run the command directly. It will open the joinedBookmarks.json file in editor. User can add/remove joined flows from this file.
 
 
-- `TMP: Search Flows Across Apps with keywords`
+- `ACN: Search Flows Across Apps with keywords`
 This command searches flows across apps with keywords. To use this command, run the command directly. This command opens the Search Panel, user can see which all apps are listed in the search results. User can load the bookmarks for the app and again search in flows specific to that app. 
 The space separated keywords are coverted to OR query. (keyword1)|(keyword2)
 Following type of keywords are supported. 
     - file name
     - text or any tags in flow name (any tags which can be agreed on team level)
     - app name (in joined flows as well)
+
+- `ACN: Reset`
+It is recommended to run this command when user switches to other branch which might have discrepency in flows. This command drops all in-memory flows and bookmarks, and loads all flows again from file system. To use this command, run the command directly.
 
 ### Views Contributed
 - `FLOW-WISE BOOKMARKS` (Contributed by [MCB]((https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark)))
@@ -57,16 +60,19 @@ Following type of keywords are supported.
         - saves the diagram as `/docs/flows/{apps-name}/{flow-type}-{flow-name}.md`
         - opens the diagram in editor
         - can be previewed using any MarkDown previewer which supports `mermaid` diagrams
-    - View all Bookmarks a flow (Will be rendered in `FLOW BOOKMARKS` view)
+    - View all Bookmarks for a flow (Will be rendered in `FLOW BOOKMARKS` view)
 
 - `FLOW BOOKMARKS`
     - Lists all bookmarks for a flow selected in `ALL FLOWS` view
+    - Search all bookmarks with a keyword
+       - file name
+        - text or any tags in bookmark name (any tags which can be agreed on team level) 
     - Clicking on a bookmark will open the file at specific line in editor
 
 ## Problems currently faced by Devs
 
 ### Onboarding to code
-  - Complex code with many layers (commanding, App, Component, Renderers, Apollo, Resolvers, MVVM)
+  - Complex code with many layers (commanding, App, Component, Renderers, Apollo, Resolvers, MVVM, services, providers, HOCs, etc)
   - HOCs (difficult to understand what data comes from where)
   - Dead Code (due to migrations)
   - Multiple versions
@@ -126,9 +132,9 @@ Following type of keywords are supported.
 ## Limitations
   - Bookmarks may not remain at exact line position with merges happening
 ## Next?
-  - Add all important flows as possible with help of teammates
+  - Make the directories for apps, docs configurable
   - Look at other possibilities of usage of this metadata
   - Mandate publishing flow for any PR
   - Perf improvement of the extension
 
-This Extension has been developed by [Amit Kumar Garg(amitgarg)](mailto:amitgarg@microsoft.com)
+This Extension has been developed by [Amit Kumar Garg(amitgarg)](mailto:amitdream2000@gmail.com)
