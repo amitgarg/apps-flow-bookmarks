@@ -40,7 +40,7 @@ Following type of keywords are supported.
 It is recommended to run this command when user switches to other branch which might have discrepency in flows. This command drops all in-memory flows and bookmarks, and loads all flows again from file system. To use this command, run the command directly.
 
 ### Views Contributed
-- `FLOW-WISE BOOKMARKS` (Contributed by [MCB]((https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark)))
+- `FLOW-WISE BOOKMARKS` (Contributed by [MCB](https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark))
     - shows the list of flows bookmarked for the active app
     - click on the bookmark  to open the flow in editor 
     - remove the bookmark for a flow by clicking on the remove icon
@@ -136,5 +136,3 @@ It is recommended to run this command when user switches to other branch which m
   - Look at other possibilities of usage of this metadata
   - Mandate publishing flow for any PR
   - Perf improvement of the extension
-
-This Extension has been developed by [Amit Kumar Garg(amitgarg)](mailto:amitdream2000@gmail.com)

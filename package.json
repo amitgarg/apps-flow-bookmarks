@@ -1,8 +1,8 @@
 {
   "name": "appwise-code-navigator",
-  "version": "1.0.0",
-  "displayName": "Appwise Code Navigator",
-  "description": "vscode extension to create flow-wise bookmarks categorized in apps, helps you navigate and debug large and complex code repositories",
+  "version": "1.0.2",
+  "displayName": "Appwise Code Flows Navigator",
+  "description": "vscode extension to create flow-wise bookmarks categorized in apps, helps you navigate and debug large and complex code repositories.",
   "main": "extension.js",
   "engines": {
     "vscode": "^1.74.0"
@@ -12,6 +12,9 @@
     "onCommand:tmp.bookmarks.loadFromApp",
     "onCommand:tmp.bookmarks.initializeForApp",
     "onCommand:tmp.bookmarks.searchFlowsAcross"
+  ],
+  "extensionDependencies": [
+    "DeepakPahawa.flowbookmark"
   ],
   "contributes": {
     "snippets": [
@@ -226,8 +229,6 @@
   },
   "keywords": [
     "flow",
-    "userflow",
-    "codeflow",
     "flowwise",
     "bookmark",
     "debug",
@@ -236,13 +237,19 @@
     "diagram"
   ],
   "categories": [
-    "Extension Packs"
+    "Other"
   ],
+  "galleryBanner": {
+    "color": "#C80000",
+    "theme": "dark"
+  },
   "author": {
     "name": "Amit Kumar Garg"
   },
   "bugs": {
     "url": "https://github.com/amitgarg/appwise-code-navigator.git/issues"
   },
-  "homepage": "https://github.com/amitgarg/appwise-code-navigator.git#readme"
+  "icon": "images/code-navigator.png",
+  "homepage": "https://github.com/amitgarg/appwise-code-navigator.git#readme",
+  "license": "SEE LICENSE IN LICENSE"
 }
