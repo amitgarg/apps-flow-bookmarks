@@ -9,9 +9,12 @@ const { FlowType } = require("./utils/Constants");
 const BOOKMARKS_STATE_KEY = "acnBookmarksState";
 const bookmarkFileName = "multiColorBookmarks.json";
 const joinedBookmarksFileName = "joinedBookmarks.json";
+
+const projectName = "teams-modular-packages";
 const activeBookmarksPath = ".vscode";
 const diagramOutputDir = "docs/flows";
 const appsFolder = "packages/apps";
+
 let myStatusBarItem;
 /**
  * @param {vscode.ExtensionContext} context
@@ -27,8 +30,6 @@ function activate(context) {
     "DeepakPahawa.flowbookmark"
   );
 
-  // Log some properties of the extension object
-  //   console.log(myExtension.packageJSON.contributes);
   // Activate the extension if it's not already activated
   if (!myExtension.isActive) {
     myExtension.activate().then(() => {
@@ -36,10 +37,10 @@ function activate(context) {
     });
   }
 
-  let projectDir = getProjectDir();
+  let projectDir = getProjectDir(projectName);
   if (!projectDir) {
     vscode.window.showErrorMessage(
-      "teams-modular-packages not found in workspace"
+      `${projectName} not found in workspace`
     );
     return;
   }
@@ -408,11 +409,11 @@ function updateStatusBarItem(appName) {
   myStatusBarItem.text = `Bookmarks: ${appName}`;
   myStatusBarItem.show();
 }
-function getProjectDir() {
+function getProjectDir(projectName) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (workspaceFolders) {
     let project = workspaceFolders.find((folder) =>
-      folder.uri.fsPath.endsWith("teams-modular-packages")
+      folder.uri.fsPath.endsWith(projectName)
     );
     return project.uri.fsPath;
   }
