@@ -41,14 +41,11 @@ function activate(context) {
     10
   );
   context.subscriptions.push(myStatusBarItem);
-  let activeApp;
-  let isWithoutError = true;
+  let state = new ExtensionState();
   let appsManager;
-  let diagramOutputDir;
-  let projectName;
   let appsFolder;
 
-  initializeWithConfiguration(true);
+  initializeWithConfiguration();
 
   const defaultAllFlowsProviderData = {
     joinedFlows: {},
@@ -77,7 +74,7 @@ function activate(context) {
   let actionReset = vscode.commands.registerCommand(
     "acn.bookmarks.reset",
     () => {
-      initializeWithConfiguration(false);
+      initializeWithConfiguration();
     }
   );
   context.subscriptions.push(actionReset);
@@ -85,14 +82,16 @@ function activate(context) {
   let actionCreateBookmarksForApp = vscode.commands.registerCommand(
     "acn.bookmarks.initializeForApp",
     () => {
-      vscode.window
-        .showQuickPick(appsManager.getAppsWithoutBookmarks(), {
-          placeHolder: "Select an App",
-          title: "Create bookmarks related to App",
-        })
-        .then((appName) => {
-          loadBookmarksFromApp(appName, true);
-        });
+      if (!state.isError) {
+        vscode.window
+          .showQuickPick(appsManager.getAppsWithoutBookmarks(), {
+            placeHolder: "Select an App",
+            title: "Create bookmarks related to App",
+          })
+          .then((appName) => {
+            loadBookmarksFromApp(appName, true);
+          });
+      }
     }
   );
   context.subscriptions.push(actionCreateBookmarksForApp);
@@ -100,12 +99,14 @@ function activate(context) {
   let actionLoadBookmarksForApp = vscode.commands.registerCommand(
     "acn.bookmarks.loadFromApp",
     () => {
-      vscode.window
-        .showQuickPick(appsManager.getAppsWithBookmarks(), {
-          placeHolder: "Select an App",
-          title: "Load bookmarks from App",
-        })
-        .then(loadBookmarksFromApp);
+      if (!state.isError) {
+        vscode.window
+          .showQuickPick(appsManager.getAppsWithBookmarks(), {
+            placeHolder: "Select an App",
+            title: "Load bookmarks from App",
+          })
+          .then(loadBookmarksFromApp);
+      }
     }
   );
   context.subscriptions.push(actionLoadBookmarksForApp);
@@ -113,8 +114,8 @@ function activate(context) {
   let actionReloadBookmarksForApp = vscode.commands.registerCommand(
     "acn.bookmarks.reloadFlows",
     () => {
-      if (isWithoutError && activeApp) {
-        loadBookmarksFromApp(activeApp);
+      if (state.activeApp) {
+        loadBookmarksFromApp(state.activeApp);
       }
     }
   );
@@ -127,8 +128,7 @@ function activate(context) {
         .loadBookmarks(intialize)
         .then(({ success }) => {
           vscode.window.showInformationMessage(success);
-          activeApp = appName;
-          return resetUI(appName, false);
+          state.setActiveApp(appName);
         })
         .then(() => {
           Promise.all([appLoader.basicFlows, appLoader.joinedFlows]).then(
@@ -157,10 +157,10 @@ function activate(context) {
   const manageJoinedBookmarksCommand = vscode.commands.registerCommand(
     "acn.bookmarks.manageJoinedBookmarks",
     (flowInfo) => {
-      if (isWithoutError) {
+      if (!state.isError) {
         if (flowInfo && flowInfo.flowType === FlowType.JOINED) {
-          if (activeApp) {
-            const appLoader = appsManager.getAppLoader(activeApp);
+          if (state.activeApp) {
+            const appLoader = appsManager.getAppLoader(state.activeApp);
             appLoader.manageJoinedBookmarks();
           }
         } else {
@@ -182,7 +182,7 @@ function activate(context) {
   const searchFlowsCommand = vscode.commands.registerCommand(
     "acn.bookmarks.filterFlows",
     () => {
-      if (isWithoutError) {
+      if (!state.isError) {
         vscode.window
           .showInputBox({
             placeHolder: "Enter keywords",
@@ -207,7 +207,7 @@ function activate(context) {
   const removeFlowsFilterCommand = vscode.commands.registerCommand(
     "acn.bookmarks.removeFlowsFilter",
     () => {
-      if (isWithoutError) {
+      if (!state.isError) {
         allFlowsTreeDataProvider.setFilter("");
         allFlowsTreeDataProvider.refresh();
         vscode.commands.executeCommand("setContext", "allFlows.filter", false);
@@ -219,7 +219,7 @@ function activate(context) {
   const filterBookmarksCommand = vscode.commands.registerCommand(
     "acn.bookmarks.filterBookmarks",
     () => {
-      if (isWithoutError) {
+      if (!state.isError) {
         vscode.window
           .showInputBox({
             placeHolder: "Enter keywords",
@@ -244,7 +244,7 @@ function activate(context) {
   const removeBookmarksFilterCommand = vscode.commands.registerCommand(
     "acn.bookmarks.removeBookmarksFilter",
     () => {
-      if (isWithoutError) {
+      if (!state.isError) {
         flowBookmarksProvider.setFilter("");
         flowBookmarksProvider.refresh();
         vscode.commands.executeCommand(
@@ -275,15 +275,15 @@ function activate(context) {
   let actionSaveActiveBookmarksToAnApp = vscode.commands.registerCommand(
     "acn.bookmarks.saveForApp",
     () => {
-      if (isWithoutError && activeApp) {
-        const appLoader = appsManager.getAppLoader(activeApp);
+      if (state.activeApp) {
+        const appLoader = appsManager.getAppLoader(state.activeApp);
         vscode.commands
           .executeCommand("flowbookmark.exportMyBookmarks")
           .then(appLoader.saveBookmarks)
           .then(({ success }) => {
             vscode.window.showInformationMessage(success);
             //removed the need to reload the bookmarks manually
-            loadBookmarksFromApp(activeApp);
+            loadBookmarksFromApp(state.activeApp);
           });
       }
     }
@@ -293,7 +293,7 @@ function activate(context) {
   const searchFlowsAcrossAppsCommand = vscode.commands.registerCommand(
     "acn.bookmarks.searchFlowsAcross",
     () => {
-      if (isWithoutError) {
+      if (!state.isError) {
         vscode.window
           .showInputBox({
             placeHolder: "Enter keywords",
@@ -385,10 +385,10 @@ function activate(context) {
   );
   context.subscriptions.push(copyAppFlowCommand);
 
-  function initializeWithConfiguration(isFirstInitialization) {
+  function initializeWithConfiguration() {
     const config = vscode.workspace.getConfiguration("codeNavigator");
-    diagramOutputDir = config.get("diagramsDir");
-    projectName = config.get("projectName");
+    let diagramOutputDir = config.get("diagramsDir");
+    let projectName = config.get("projectName");
     appsFolder = config.get("appsDir");
 
     projectDir = getProjectDir(projectName);
@@ -406,20 +406,13 @@ function activate(context) {
           activeBookmarksPath,
           diagramOutputDir
         );
-        resetUI("None", !isFirstInitialization);
-        isWithoutError = true;
+        state.initialize();
         context.subscriptions.push(appsManager);
       } else {
-        vscode.window.showErrorMessage(
-          `Apps folder ${appsFolder} does not exist`
-        );
-        resetUI("PATH_ERROR", !isFirstInitialization);
-        isWithoutError = false;
+        state.setPathError(true, appsFolder);
       }
     } else {
-      vscode.window.showErrorMessage(`${projectName} not found in workspace`);
-      resetUI("PATH_ERROR", !isFirstInitialization);
-      isWithoutError = false;
+      state.setPathError(false, projectName);
     }
   }
   function ExtensionState() {
@@ -427,14 +420,18 @@ function activate(context) {
     this.activeApp;
     this.isError;
     this.initialize = () => {
-      resetUI("None", this.isInitialized);
+      resetUI("Ready", this.isInitialized);
       this.isInitialized = true;
-    }
+      this.activeApp = undefined;
+      this.isError = false;
+    };
     this.setPathError = (isAppPathError, path) => {
       this.activeApp = undefined;
       this.isError = true;
       vscode.window.showErrorMessage(
-        isAppPathError? `Apps folder ${path} does not exist`: `${path} not found in workspace`
+        isAppPathError
+          ? `Apps folder ${path} does not exist`
+          : `${path} not found in workspace`
       );
       resetUI("PATH_ERROR", this.isInitialized);
       this.isInitialized = true;
@@ -445,19 +442,19 @@ function activate(context) {
       resetUI(appName, false);
       this.isInitialized = true;
     };
-  }
 
-  function resetUI(status, refreshTrees) {
-    if (refreshTrees) {
-      allFlowsTreeDataProvider.setData(defaultAllFlowsProviderData);
-      allFlowsTreeDataProvider.refresh();
-      flowBookmarksProvider.setData({});
-      flowBookmarksProvider.refresh();
-    }
-    myStatusBarItem.text = `Bookmarks: ${status}`;
-    myStatusBarItem.color = status == "PATH_ERROR" ? "#F00" : undefined;
-    myStatusBarItem.show();
-    return vscode.commands.executeCommand("flowbookmark.clearAll");
+    var resetUI = (status, refreshTrees) => {
+      if (refreshTrees) {
+        allFlowsTreeDataProvider.setData(defaultAllFlowsProviderData);
+        allFlowsTreeDataProvider.refresh();
+        flowBookmarksProvider.setData({});
+        flowBookmarksProvider.refresh();
+      }
+      myStatusBarItem.text = `Bookmarks: ${status}`;
+      myStatusBarItem.color = status == "PATH_ERROR" ? "#F00C" : (status == "Ready" ? "#0F0C" :undefined);
+      myStatusBarItem.show();
+      return vscode.commands.executeCommand("flowbookmark.clearAll");
+    };
   }
 }
 
