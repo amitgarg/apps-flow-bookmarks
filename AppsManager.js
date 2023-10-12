@@ -4,9 +4,17 @@ const path = require("path");
 const { handleFileCode } = require("./utils/FileUtils");
 const { AppLoader } = require("./AppLoader");
 const { generateGitGraphMarkdown } = require("./utils/DiagramUtils");
-const {FlowType} = require("./utils/Constants");
+const { FlowType } = require("./utils/Constants");
 class AppsManager {
-  constructor(context, projectDir,bookmarkFileName, joinedBookmarksFileName, appsFolder,activeBookmarksPath, diagramOutputDir ) {
+  constructor(
+    context,
+    projectDir,
+    bookmarkFileName,
+    joinedBookmarksFileName,
+    appsFolder,
+    activeBookmarksPath,
+    diagramOutputDir
+  ) {
     this.context = context;
     this.projectDir = projectDir;
     this.bookmarkFileName = bookmarkFileName;
@@ -23,15 +31,29 @@ class AppsManager {
   reset = () => {
     this.appLoaders = {};
     this._refreshListOfApps();
-  }
+  };
   getAppLoader = (appName) => {
     if (!this.appLoaders[appName]) {
       this.appLoaders[appName] = new AppLoader(
         this.context,
         appName,
-        path.join(this.projectDir, this.appsFolder, appName, this.bookmarkFileName),
-        path.join(this.projectDir, this.appsFolder, appName, this.joinedBookmarksFileName),
-        path.join(this.projectDir, this.activeBookmarksPath, this.bookmarkFileName),
+        path.join(
+          this.projectDir,
+          this.appsFolder,
+          appName,
+          this.bookmarkFileName
+        ),
+        path.join(
+          this.projectDir,
+          this.appsFolder,
+          appName,
+          this.joinedBookmarksFileName
+        ),
+        path.join(
+          this.projectDir,
+          this.activeBookmarksPath,
+          this.bookmarkFileName
+        ),
         this.fileCodeUtils.getCodeToFileMap,
         this.fileCodeUtils.getFileCode,
         this._changeBookmarksStatus
@@ -121,7 +143,8 @@ class AppsManager {
     Object.keys(this.appLoaders).forEach((appName) => {
       this.appLoaders[appName].dispose();
     });
-    this.appLoaders = null;
+    this.apps = [];
+    this.appLoaders = {};
   }
 }
 exports.AppsManager = AppsManager;

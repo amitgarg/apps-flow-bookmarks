@@ -1,4 +1,6 @@
 const vscode = require("vscode");
+const fs = require("fs");
+const path = require("path");
 // const { loadState, saveState } = require("./manage");
 const AllFlowsProvider = require("./providers/AllFlowsProvider");
 const FlowBookmarksProvider = require("./providers/FlowBookmarksProvider");
@@ -6,14 +8,10 @@ const { AppsManager } = require("./AppsManager");
 const { getJoinFlowConfig } = require("./utils/FileUtils");
 const { FlowType } = require("./utils/Constants");
 
-const BOOKMARKS_STATE_KEY = "acnBookmarksState";
 const bookmarkFileName = "multiColorBookmarks.json";
 const joinedBookmarksFileName = "joinedBookmarks.json";
 
-const projectName = "teams-modular-packages";
 const activeBookmarksPath = ".vscode";
-const diagramOutputDir = "docs/flows";
-const appsFolder = "packages/apps";
 
 let myStatusBarItem;
 /**
@@ -37,30 +35,20 @@ function activate(context) {
     });
   }
 
-  let projectDir = getProjectDir(projectName);
-  if (!projectDir) {
-    vscode.window.showErrorMessage(
-      `${projectName} not found in workspace`
-    );
-    return;
-  }
   // create a new status bar item that we can now manage
   myStatusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     10
   );
   context.subscriptions.push(myStatusBarItem);
+  let activeApp;
+  let isWithoutError = true;
+  let appsManager;
+  let diagramOutputDir;
+  let projectName;
+  let appsFolder;
 
-  const appsManager = new AppsManager(
-    context,
-    projectDir,
-    bookmarkFileName,
-    joinedBookmarksFileName,
-    appsFolder,
-    activeBookmarksPath,
-    diagramOutputDir
-  );
-  context.subscriptions.push(appsManager);
+  initializeWithConfiguration(true);
 
   const defaultAllFlowsProviderData = {
     joinedFlows: {},
@@ -89,16 +77,7 @@ function activate(context) {
   let actionReset = vscode.commands.registerCommand(
     "acn.bookmarks.reset",
     () => {
-      appsManager.reset();
-      allFlowsTreeDataProvider.setData(defaultAllFlowsProviderData);
-      allFlowsTreeDataProvider.refresh();
-      flowBookmarksProvider.setData({});
-      flowBookmarksProvider.refresh();
-      vscode.commands.executeCommand("flowbookmark.clearAll");
-      updateStatusBarItem("None");
-      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
-      state.activeApp = "None";
-      context.globalState.update(BOOKMARKS_STATE_KEY, state);
+      initializeWithConfiguration(false);
     }
   );
   context.subscriptions.push(actionReset);
@@ -134,43 +113,41 @@ function activate(context) {
   let actionReloadBookmarksForApp = vscode.commands.registerCommand(
     "acn.bookmarks.reloadFlows",
     () => {
-      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
-      loadBookmarksFromApp(state.activeApp);
+      if (isWithoutError && activeApp) {
+        loadBookmarksFromApp(activeApp);
+      }
     }
   );
   context.subscriptions.push(actionReloadBookmarksForApp);
 
   const loadBookmarksFromApp = (appName, intialize) => {
     if (appName) {
-      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
       const appLoader = appsManager.getAppLoader(appName);
-      return vscode.commands
-        .executeCommand("flowbookmark.clearAll")
-        .then(() => appLoader.loadBookmarks(intialize))
+      return appLoader
+        .loadBookmarks(intialize)
         .then(({ success }) => {
-          return vscode.commands
-            .executeCommand("flowbookmark.importFromFile")
-            .then(() => {
-              vscode.window.showInformationMessage(success);
-              Promise.all([appLoader.basicFlows, appLoader.joinedFlows]).then(
-                ([basicFlows, joinedFlows]) => {
-                  let data = {
-                    appName: appName,
-                    basicFlows,
-                    joinedFlows,
-                  };
-                  allFlowsTreeDataProvider.setData(data);
-                  allFlowsTreeDataProvider.refresh();
-                  flowBookmarksProvider.setData({});
-                  flowBookmarksProvider.refresh();
-                }
-              );
-            })
-            .then(() => {
-              state.activeApp = appName;
-              context.globalState.update(BOOKMARKS_STATE_KEY, state);
-              updateStatusBarItem(appName);
-            });
+          vscode.window.showInformationMessage(success);
+          activeApp = appName;
+          updateStatusBarItem(appName);
+          return vscode.commands.executeCommand("flowbookmark.clearAll");
+        })
+        .then(() => {
+          Promise.all([appLoader.basicFlows, appLoader.joinedFlows]).then(
+            ([basicFlows, joinedFlows]) => {
+              let data = {
+                appName: appName,
+                basicFlows,
+                joinedFlows,
+              };
+              allFlowsTreeDataProvider.setData(data);
+              allFlowsTreeDataProvider.refresh();
+              flowBookmarksProvider.setData({});
+              flowBookmarksProvider.refresh();
+            }
+          );
+        })
+        .then(() => {
+          return vscode.commands.executeCommand("flowbookmark.importFromFile");
         })
         .then(() => {
           vscode.commands.executeCommand("setContext", "appLoaded", !intialize);
@@ -181,20 +158,23 @@ function activate(context) {
   const manageJoinedBookmarksCommand = vscode.commands.registerCommand(
     "acn.bookmarks.manageJoinedBookmarks",
     (flowInfo) => {
-      if (flowInfo && flowInfo.flowType === FlowType.JOINED) {
-        let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
-        const appLoader = appsManager.getAppLoader(state.activeApp);
-        appLoader.manageJoinedBookmarks();
-      } else {
-        vscode.window
-          .showQuickPick(appsManager.getAppsWithBookmarks(), {
-            placeHolder: "Select an App",
-            title: "Manage Joined Flows for App",
-          })
-          .then((appName) => {
-            const appLoader = appsManager.getAppLoader(appName);
+      if (isWithoutError) {
+        if (flowInfo && flowInfo.flowType === FlowType.JOINED) {
+          if (activeApp) {
+            const appLoader = appsManager.getAppLoader(activeApp);
             appLoader.manageJoinedBookmarks();
-          });
+          }
+        } else {
+          vscode.window
+            .showQuickPick(appsManager.getAppsWithBookmarks(), {
+              placeHolder: "Select an App",
+              title: "Manage Joined Flows for App",
+            })
+            .then((appName) => {
+              const appLoader = appsManager.getAppLoader(appName);
+              appLoader.manageJoinedBookmarks();
+            });
+        }
       }
     }
   );
@@ -203,22 +183,24 @@ function activate(context) {
   const searchFlowsCommand = vscode.commands.registerCommand(
     "acn.bookmarks.filterFlows",
     () => {
-      vscode.window
-        .showInputBox({
-          placeHolder: "Enter keywords",
-          prompt: "Search Flows with keywords",
-          value: "",
-          ignoreFocusOut: true,
-        })
-        .then((keywords) => {
-          allFlowsTreeDataProvider.setFilter(keywords);
-          allFlowsTreeDataProvider.refresh();
-          vscode.commands.executeCommand(
-            "setContext",
-            "allFlows.filter",
-            !!keywords
-          );
-        });
+      if (isWithoutError) {
+        vscode.window
+          .showInputBox({
+            placeHolder: "Enter keywords",
+            prompt: "Search Flows with keywords",
+            value: "",
+            ignoreFocusOut: true,
+          })
+          .then((keywords) => {
+            allFlowsTreeDataProvider.setFilter(keywords);
+            allFlowsTreeDataProvider.refresh();
+            vscode.commands.executeCommand(
+              "setContext",
+              "allFlows.filter",
+              !!keywords
+            );
+          });
+      }
     }
   );
   context.subscriptions.push(searchFlowsCommand);
@@ -226,9 +208,11 @@ function activate(context) {
   const removeFlowsFilterCommand = vscode.commands.registerCommand(
     "acn.bookmarks.removeFlowsFilter",
     () => {
-      allFlowsTreeDataProvider.setFilter("");
-      allFlowsTreeDataProvider.refresh();
-      vscode.commands.executeCommand("setContext", "allFlows.filter", false);
+      if (isWithoutError) {
+        allFlowsTreeDataProvider.setFilter("");
+        allFlowsTreeDataProvider.refresh();
+        vscode.commands.executeCommand("setContext", "allFlows.filter", false);
+      }
     }
   );
   context.subscriptions.push(removeFlowsFilterCommand);
@@ -236,22 +220,24 @@ function activate(context) {
   const filterBookmarksCommand = vscode.commands.registerCommand(
     "acn.bookmarks.filterBookmarks",
     () => {
-      vscode.window
-        .showInputBox({
-          placeHolder: "Enter keywords",
-          prompt: "Search Bookmarks with keywords",
-          value: "",
-          ignoreFocusOut: true,
-        })
-        .then((keywords) => {
-          flowBookmarksProvider.setFilter(keywords);
-          flowBookmarksProvider.refresh();
-          vscode.commands.executeCommand(
-            "setContext",
-            "flowBookmarks.filter",
-            !!keywords
-          );
-        });
+      if (isWithoutError) {
+        vscode.window
+          .showInputBox({
+            placeHolder: "Enter keywords",
+            prompt: "Search Bookmarks with keywords",
+            value: "",
+            ignoreFocusOut: true,
+          })
+          .then((keywords) => {
+            flowBookmarksProvider.setFilter(keywords);
+            flowBookmarksProvider.refresh();
+            vscode.commands.executeCommand(
+              "setContext",
+              "flowBookmarks.filter",
+              !!keywords
+            );
+          });
+      }
     }
   );
   context.subscriptions.push(filterBookmarksCommand);
@@ -259,13 +245,15 @@ function activate(context) {
   const removeBookmarksFilterCommand = vscode.commands.registerCommand(
     "acn.bookmarks.removeBookmarksFilter",
     () => {
-      flowBookmarksProvider.setFilter("");
-      flowBookmarksProvider.refresh();
-      vscode.commands.executeCommand(
-        "setContext",
-        "flowBookmarks.filter",
-        false
-      );
+      if (isWithoutError) {
+        flowBookmarksProvider.setFilter("");
+        flowBookmarksProvider.refresh();
+        vscode.commands.executeCommand(
+          "setContext",
+          "flowBookmarks.filter",
+          false
+        );
+      }
     }
   );
   context.subscriptions.push(removeBookmarksFilterCommand);
@@ -288,16 +276,15 @@ function activate(context) {
   let actionSaveActiveBookmarksToAnApp = vscode.commands.registerCommand(
     "acn.bookmarks.saveForApp",
     () => {
-      let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
-      if (state.activeApp) {
-        const appLoader = appsManager.getAppLoader(state.activeApp);
+      if (isWithoutError && activeApp) {
+        const appLoader = appsManager.getAppLoader(activeApp);
         vscode.commands
           .executeCommand("flowbookmark.exportMyBookmarks")
           .then(appLoader.saveBookmarks)
           .then(({ success }) => {
             vscode.window.showInformationMessage(success);
             //removed the need to reload the bookmarks manually
-            loadBookmarksFromApp(state.activeApp);
+            loadBookmarksFromApp(activeApp);
           });
       }
     }
@@ -307,26 +294,28 @@ function activate(context) {
   const searchFlowsAcrossAppsCommand = vscode.commands.registerCommand(
     "acn.bookmarks.searchFlowsAcross",
     () => {
-      vscode.window
-        .showInputBox({
-          placeHolder: "Enter keywords",
-          prompt: "Search Flows Across Appswith keywords",
-          value: "",
-          ignoreFocusOut: true,
-        })
-        .then((keywords) => {
-          const query = keywords
-            .split(" ")
-            .map((keyword) => `(${keyword})`)
-            .join("|");
-          const filesToInclude = `${appsFolder}/**/{${bookmarkFileName},${joinedBookmarksFileName}}`;
-          vscode.commands.executeCommand("workbench.action.findInFiles", {
-            query,
-            filesToInclude,
-            matchCase: false,
-            isRegex: true,
+      if (isWithoutError) {
+        vscode.window
+          .showInputBox({
+            placeHolder: "Enter keywords",
+            prompt: "Search Flows Across Appswith keywords",
+            value: "",
+            ignoreFocusOut: true,
+          })
+          .then((keywords) => {
+            const query = keywords
+              .split(" ")
+              .map((keyword) => `(${keyword})`)
+              .join("|");
+            const filesToInclude = `${appsFolder}/**/{${bookmarkFileName},${joinedBookmarksFileName}}`;
+            vscode.commands.executeCommand("workbench.action.findInFiles", {
+              query,
+              filesToInclude,
+              matchCase: false,
+              isRegex: true,
+            });
           });
-        });
+      }
     }
   );
   context.subscriptions.push(searchFlowsAcrossAppsCommand);
@@ -396,17 +385,83 @@ function activate(context) {
     }
   );
   context.subscriptions.push(copyAppFlowCommand);
-  let state = context.globalState.get(BOOKMARKS_STATE_KEY) || {};
-  if (state.activeApp) {
-    loadBookmarksFromApp(state.activeApp);
-  } else {
+
+  function initializeWithConfiguration(isFirstInitialization) {
+    const config = vscode.workspace.getConfiguration("codeNavigator");
+    diagramOutputDir = config.get("diagramsDir");
+    projectName = config.get("projectName");
+    appsFolder = config.get("appsDir");
+
+    projectDir = getProjectDir(projectName);
+    if (projectDir) {
+      if (fs.existsSync(path.join(projectDir, appsFolder))) {
+        if (appsManager) {
+          appsManager.dispose();
+        }
+        appsManager = new AppsManager(
+          context,
+          projectDir,
+          bookmarkFileName,
+          joinedBookmarksFileName,
+          appsFolder,
+          activeBookmarksPath,
+          diagramOutputDir
+        );
+        resetUI("None", !isFirstInitialization);
+        isWithoutError = true;
+        context.subscriptions.push(appsManager);
+      } else {
+        vscode.window.showErrorMessage(
+          `Apps folder ${appsFolder} does not exist`
+        );
+        resetUI("PATH_ERROR", !isFirstInitialization);
+        isWithoutError = false;
+      }
+    } else {
+      vscode.window.showErrorMessage(`${projectName} not found in workspace`);
+      resetUI("PATH_ERROR", !isFirstInitialization);
+    }
+  }
+  function ExtensionState() {
+    this.isInitialized = false;
+    this.activeApp;
+    this.isError;
+    this.initialize = () => {
+      resetUI("None", this.isInitialized);
+      this.isInitialized = true;
+    }
+    this.setPathError = (isAppPathError, path) => {
+      this.activeApp = undefined;
+      this.isError = true;
+      vscode.window.showErrorMessage(
+        isAppPathError? `Apps folder ${path} does not exist`: `${path} not found in workspace`
+      );
+      resetUI("PATH_ERROR", this.isInitialized);
+      this.isInitialized = true;
+    };
+    this.setActiveApp = (appName) => {
+      this.activeApp = appName;
+      this.isError = false;
+      resetUI(appName, false);
+      this.isInitialized = true;
+    };
+  }
+
+  function resetUI(status, refreshTrees) {
+    if (refreshTrees) {
+      allFlowsTreeDataProvider.setData(defaultAllFlowsProviderData);
+      allFlowsTreeDataProvider.refresh();
+      flowBookmarksProvider.setData({});
+      flowBookmarksProvider.refresh();
+    }
     vscode.commands.executeCommand("flowbookmark.clearAll");
-    updateStatusBarItem(state.activeApp || "None");
+    updateStatusBarItem(status || "None");
   }
 }
 
 function updateStatusBarItem(appName) {
   myStatusBarItem.text = `Bookmarks: ${appName}`;
+  myStatusBarItem.color = appName == "PATH_ERROR" ? "#F00" : undefined;
   myStatusBarItem.show();
 }
 function getProjectDir(projectName) {
@@ -415,7 +470,7 @@ function getProjectDir(projectName) {
     let project = workspaceFolders.find((folder) =>
       folder.uri.fsPath.endsWith(projectName)
     );
-    return project.uri.fsPath;
+    return project && project.uri.fsPath;
   }
 }
 

@@ -23,6 +23,26 @@
         "path": "./snippets/json.json"
       }
     ],
+    "configuration": {
+      "title": "Appwise Code Flows Navigator",
+      "properties": {
+        "codeNavigator.projectName": {
+          "type": "string",
+          "default": "teams-modular-packages",
+          "description": "Name of the project to be used to load flows by the extension"
+        },
+        "codeNavigator.appsDir": {
+          "type": "string",
+          "default": "packages/apps",
+          "description": "Path where all the apps are located in the project"
+        },
+        "codeNavigator.diagramsDir": {
+          "type": "string",
+          "default": "docs/flows",
+          "description": "Path where all the diagrams will be exported"
+        }
+      }
+    },
     "commands": [
       {
         "command": "acn.bookmarks.reset",
