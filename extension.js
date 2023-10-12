@@ -128,8 +128,7 @@ function activate(context) {
         .then(({ success }) => {
           vscode.window.showInformationMessage(success);
           activeApp = appName;
-          updateStatusBarItem(appName);
-          return vscode.commands.executeCommand("flowbookmark.clearAll");
+          return resetUI(appName, false);
         })
         .then(() => {
           Promise.all([appLoader.basicFlows, appLoader.joinedFlows]).then(
@@ -420,6 +419,7 @@ function activate(context) {
     } else {
       vscode.window.showErrorMessage(`${projectName} not found in workspace`);
       resetUI("PATH_ERROR", !isFirstInitialization);
+      isWithoutError = false;
     }
   }
   function ExtensionState() {
@@ -454,16 +454,13 @@ function activate(context) {
       flowBookmarksProvider.setData({});
       flowBookmarksProvider.refresh();
     }
-    vscode.commands.executeCommand("flowbookmark.clearAll");
-    updateStatusBarItem(status || "None");
+    myStatusBarItem.text = `Bookmarks: ${status}`;
+    myStatusBarItem.color = status == "PATH_ERROR" ? "#F00" : undefined;
+    myStatusBarItem.show();
+    return vscode.commands.executeCommand("flowbookmark.clearAll");
   }
 }
 
-function updateStatusBarItem(appName) {
-  myStatusBarItem.text = `Bookmarks: ${appName}`;
-  myStatusBarItem.color = appName == "PATH_ERROR" ? "#F00" : undefined;
-  myStatusBarItem.show();
-}
 function getProjectDir(projectName) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (workspaceFolders) {
