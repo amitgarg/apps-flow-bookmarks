@@ -13,6 +13,18 @@ There are 2 types of flows supported:
 Both of these above file types should be checked-in to repo, to make sure that bookmarks are available to all developers.
 
 ## Features
+
+### Configurations contributed to Settings
+
+- `codeNavigator.diagramsDir`
+This setting is used to configure the directory where the diagrams will be saved. The default value is `docs/flows`
+
+- `codeNavigator.appsDir`
+This setting is used to configure the directory where the apps are located. The default value is `packages/apps`
+
+- `codeNavigator.projectName`
+This setting is used to configure the project name. The default value is `teams-modular-packages`
+
 ### Commands contributed to Command Palette
 
 - `ACN: Load Bookmarks from an App`
@@ -37,7 +49,9 @@ Following type of keywords are supported.
     - app name (in joined flows as well)
 
 - `ACN: Reset`
-It is recommended to run this command when user switches to other branch which might have discrepency in flows. This command drops all in-memory flows and bookmarks, and loads all flows again from file system. To use this command, run the command directly.
+This command drops all in-memory flows and bookmarks, and loads all flows again from file system. It is recommended to run this command when 
+  - user switches to other branch which might have different flows. 
+  - user makes changes to `extension settings/config` which might affect the flow files location.
 
 ### Views Contributed
 - `FLOW-WISE BOOKMARKS` (Contributed by [MCB](https://marketplace.visualstudio.com/items?itemName=DeepakPahawa.flowbookmark))
