@@ -24,13 +24,13 @@ function activate(context) {
     'Congratulations, your extension "appwise-code-navigator" is now active!'
   );
 
-  const myExtension = vscode.extensions.getExtension(
+  const mcbExtension = vscode.extensions.getExtension(
     "DeepakPahawa.flowbookmark"
   );
 
   // Activate the extension if it's not already activated
-  if (!myExtension.isActive) {
-    myExtension.activate().then(() => {
+  if (!mcbExtension.isActive) {
+    mcbExtension.activate().then(() => {
       console.log("MCB Extension activated");
     });
   }

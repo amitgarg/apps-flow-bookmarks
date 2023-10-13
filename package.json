@@ -68,7 +68,8 @@
       {
         "command": "acn.bookmarks.saveForApp",
         "title": "Save Bookmarks for App",
-        "category": "ACN"
+        "category": "ACN",
+        "icon": "$(save-all)"
       },
       {
         "command": "acn.bookmarks.searchFlowsAcross",
@@ -175,6 +176,12 @@
         }
       ],
       "view/title": [
+        {
+          "command": "acn.bookmarks.saveForApp",
+          "when": "view == flowBookmarksView",
+          "showOn": "always",
+          "group": "navigation"
+        },
         {
           "command": "acn.bookmarks.removeFlowsFilter",
           "when": "view == allFlows && allFlows.filter == true",

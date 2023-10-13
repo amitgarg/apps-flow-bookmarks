@@ -5,6 +5,7 @@ const { handleFileCode } = require("./utils/FileUtils");
 const { AppLoader } = require("./AppLoader");
 const { generateGitGraphMarkdown } = require("./utils/DiagramUtils");
 const { FlowType } = require("./utils/Constants");
+
 class AppsManager {
   constructor(
     context,
@@ -67,10 +68,13 @@ class AppsManager {
       app.hasBookmarks = hasBookmarks;
     }
   };
+
   _refreshListOfApps() {
     const folderPath = path.join(this.projectDir, this.appsFolder);
-    const appDirs = fs.readdirSync(folderPath);
-    this.apps = appDirs.map((appDir) => {
+    const appDirs = fs
+      .readdirSync(folderPath, { withFileTypes: true })
+      .filter((file) => file.isDirectory());
+    this.apps = appDirs.map(({name: appDir}) => {
       try {
         fs.accessSync(
           path.join(folderPath, appDir, this.bookmarkFileName),
