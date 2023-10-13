@@ -39,7 +39,6 @@ This command saves bookmarks for the active app. To use this command, run the co
 - `ACN: Manage Joined Flows for an App`
 This command manages joined flows for an app. To use this command, run the command directly. It will open the joinedBookmarks.json file in editor. User can add/remove joined flows from this file.
 
-
 - `ACN: Search Flows Across Apps with keywords`
 This command searches flows across apps with keywords. To use this command, run the command directly. This command opens the Search Panel, user can see which all apps are listed in the search results. User can load the bookmarks for the app and again search in flows specific to that app. 
 The space separated keywords are coverted to OR query. (keyword1)|(keyword2)
@@ -66,9 +65,10 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
 
 - `ALL FLOWS`
     - Lists all Basic and Joined flows
+    - Highlight the @tag and #tag in flow name
     - Reload all flows from the app again (affects all views)
     - Search flows in the app with  (matches any of below)
-        - text or any tags in flow name (any tags which can be agreed on team level)
+        - text or any @tag OR #tag in flow name (any tags which can be agreed on team level)
         - app name (for joined flows)
     - Copy JSON snippet for a flow ( these snippets can be used to configure joined flows in joinedBookmarks.json)
     - Generate Git Graph diagram of the flow
@@ -79,9 +79,10 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
 
 - `FLOW BOOKMARKS`
     - Lists all bookmarks for a flow selected in `ALL FLOWS` view
+    - Highlight the @tag and #tag in bookmark name
     - Search all bookmarks with a keyword
        - file name
-        - text or any tags in bookmark name (any tags which can be agreed on team level) 
+        - text or any tags in bookmark name (any @tag OR #tag which can be agreed on team level) 
     - Clicking on a bookmark will open the file at specific line in editor
 
 ## Problems currently faced by Devs

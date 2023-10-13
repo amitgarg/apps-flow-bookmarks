@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const path = require("path");
+const { getHighlights } = require("../utils/StyleUtils");
 const iconPath = {
   light: path.join(__filename, "../..", "images", "bookmark.svg"),
   dark: path.join(__filename, "../..", "images", "bookmark.svg"),
@@ -27,8 +28,9 @@ class FlowBookmarksProvider {
       };
       data.children = bookmarks.map((bookmark, index) => {
         let lineNumber = parseInt(bookmark.lineNumber) + 1;
-        let bookmarkElement =  {
-          label: `${index}.${bookmark.description}`,
+        let label = `${index}.${bookmark.description}`;
+        let bookmarkElement = {
+          label: { label, highlights: getHighlights(label) },
           description: `${bookmark.fileName} - ${lineNumber}`,
           text: bookmark.text,
           bookmark: bookmark,
@@ -54,11 +56,14 @@ class FlowBookmarksProvider {
     return [];
   }
   _filterData() {
-    if(!this.filterValue){
+    if (!this.filterValue) {
       return this.data;
     }
     return this.data.map((flow) => {
-      let newFlow = {label: `${flow.label} (FILTER: ${this.filterValue})`, type: flow.type };
+      let newFlow = {
+        label: `${flow.label} (FILTER: ${this.filterValue})`,
+        type: flow.type,
+      };
       newFlow.children = flow.children.filter(({ tooltip, description }) => {
         return (
           description.toUpperCase().includes(this.filterValue) ||
@@ -83,6 +88,7 @@ class FlowBookmarksProvider {
 
   getTreeItem(element) {
     let item = new vscode.TreeItem(
+      // { label: element.label, highlights: this.getHighlights(element.label) },
       element.label,
       element.type !== "bookmark"
         ? vscode.TreeItemCollapsibleState.Expanded
@@ -93,7 +99,7 @@ class FlowBookmarksProvider {
       item.description = element.description;
       item.iconPath = iconPath;
       item.resourceUri = vscode.Uri.file(element.path);
-      if(!element.path){
+      if (!element.path) {
         item.color = "#FF0000";
         item.iconPath = missingBookmarkIconPath;
       }

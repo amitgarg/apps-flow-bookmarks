@@ -1,6 +1,7 @@
 const vscode = require("vscode");
 const path = require("path");
 const { FlowType } = require("../utils/Constants");
+const { getHighlights } = require("../utils/StyleUtils");
 const BASIC_FLOWS_KEY = "Basic Flows";
 const iconPath = {
   light: path.join(__filename, "../..", "images", "flow1.svg"),
@@ -109,6 +110,7 @@ class AllFlowsProvider {
 
   getTreeItem(element) {
     let treeItemType;
+    let label = element.label;
     if (element.type === "category") {
       treeItemType =
         !this.filterValue && element.flowType == FlowType.BASIC
@@ -121,10 +123,12 @@ class AllFlowsProvider {
           : this.filterValue
           ? vscode.TreeItemCollapsibleState.Collapsed
           : vscode.TreeItemCollapsibleState.Collapsed;
+      label = { label, highlights: getHighlights(label) };
     } else if (element.type === "subflow") {
       treeItemType = vscode.TreeItemCollapsibleState.None;
+      label = { label, highlights: getHighlights(label) };
     }
-    let item = new vscode.TreeItem(element.label, treeItemType);
+    let item = new vscode.TreeItem(label, treeItemType);
     if (element.type === "subflow") {
       item.description = element.description;
     }
