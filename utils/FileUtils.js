@@ -7,7 +7,7 @@ function handleFileCode() {
 			const filePathArray = filePath.split('/');
 			const fileName = filePathArray[filePathArray.length - 1];
 			let code = fileName
-				.split('-')
+				.split(/[-_]/)
 				.map((word) => word.charAt(0).toUpperCase())
 				.join('');
 			if (codeToFileMap[code]) {
