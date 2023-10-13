@@ -62,6 +62,7 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
         - edit bookmark name
         - move bookmark to other flow by editing flow name
         - change bookmark order by editing indexing
+    - Save all bookmarks for current app
 
 - `ALL FLOWS`
     - Lists all Basic and Joined flows
