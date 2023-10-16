@@ -8,6 +8,7 @@ class TagManager {
   }
   addTag(tag, description) {
     if (tag) {
+      tag = tag.trim().replace(/[\s<>]/g, "_");
       this.tags[tag] = description || "";
     }
   }
@@ -16,6 +17,9 @@ class TagManager {
       delete this.tags[tag];
       this.taggedFlows.untagAllFlows(tag);
     }
+  }
+  getTagsForFlow(appName, flowName) {
+    return this.taggedFlows.getTagsForFlow(appName, flowName);
   }
 
   tagFlow(appName, flowName, tag) {
@@ -38,8 +42,6 @@ class TagManager {
         return {};
       })
       .then(({ tags, taggedFlows }) => {
-        console.log("tags", tags );
-        console.log("taggedFlows", taggedFlows );
         this.tags = tags || {};
         this.taggedFlows = new TaggedFlows(taggedFlows);
       });
@@ -59,6 +61,11 @@ class TagManager {
 
 function TaggedFlows(flows = {}) {
   this.flows = flows;
+  this.getTagsForFlow = (appName, flowName) => {
+    return this.flows[appName] && this.flows[appName][flowName]
+      ? this.flows[appName][flowName]
+      : [];
+  };
   this.tagFlow = (appName, flowName, tag) => {
     if (!this.flows[appName]) {
       this.flows[appName] = { flowName: [tag] };
