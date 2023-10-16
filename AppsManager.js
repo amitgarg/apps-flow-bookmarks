@@ -2,7 +2,7 @@ const fs = require("fs");
 const fsPromises = require("fs").promises;
 const path = require("path");
 const { handleFileCode } = require("./utils/FileUtils");
-const { AppLoader } = require("./AppLoader");
+const AppLoader = require("./AppLoader");
 const { generateGitGraphMarkdown } = require("./utils/DiagramUtils");
 const { FlowType } = require("./utils/Constants");
 
@@ -74,7 +74,7 @@ class AppsManager {
     const appDirs = fs
       .readdirSync(folderPath, { withFileTypes: true })
       .filter((file) => file.isDirectory());
-    this.apps = appDirs.map(({name: appDir}) => {
+    this.apps = appDirs.map(({ name: appDir }) => {
       try {
         fs.accessSync(
           path.join(folderPath, appDir, this.bookmarkFileName),
@@ -151,4 +151,4 @@ class AppsManager {
     this.appLoaders = {};
   }
 }
-exports.AppsManager = AppsManager;
+module.exports = AppsManager;

@@ -4,13 +4,12 @@ const path = require("path");
 // const { loadState, saveState } = require("./manage");
 const AllFlowsProvider = require("./providers/AllFlowsProvider");
 const FlowBookmarksProvider = require("./providers/FlowBookmarksProvider");
-const { AppsManager } = require("./AppsManager");
+const AppsManager = require("./AppsManager");
 const { getJoinFlowConfig } = require("./utils/FileUtils");
 const { FlowType } = require("./utils/Constants");
 
 const bookmarkFileName = "multiColorBookmarks.json";
 const joinedBookmarksFileName = "joinedBookmarks.json";
-
 const activeBookmarksPath = ".vscode";
 
 let myStatusBarItem;
@@ -451,7 +450,12 @@ function activate(context) {
         flowBookmarksProvider.refresh();
       }
       myStatusBarItem.text = `Bookmarks: ${status}`;
-      myStatusBarItem.color = status == "PATH_ERROR" ? "#F00C" : (status == "Ready" ? "#0F0C" :undefined);
+      myStatusBarItem.color =
+        status == "PATH_ERROR"
+          ? "#F00C"
+          : status == "Ready"
+          ? "#0F0C"
+          : undefined;
       myStatusBarItem.show();
       return vscode.commands.executeCommand("flowbookmark.clearAll");
     };

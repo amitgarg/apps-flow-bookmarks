@@ -27,13 +27,10 @@ class AppLoader {
   initializeBookmarks = () => {
     const fileContent = "{}";
     return fs
-      .writeFile(
-        this.activeBookmarksFile,
-        fileContent
-      )
+      .writeFile(this.activeBookmarksFile, fileContent)
       .then(() => {
-        this.basicFlows={};
-        this.joinedFlows={};
+        this.basicFlows = {};
+        this.joinedFlows = {};
         this.onChangeBookmarksStatus(this.appName, true);
         return { success: `Bookmarks initialized for app ${this.appName}` };
       })
@@ -43,16 +40,13 @@ class AppLoader {
         };
       });
   };
-  
+
   loadBookmarks = (intialize) => {
-    if(intialize){
+    if (intialize) {
       return this.initializeBookmarks();
     }
     return fs
-      .copyFile(
-        this.appBookmarksFile,
-        this.activeBookmarksFile
-      )
+      .copyFile(this.appBookmarksFile, this.activeBookmarksFile)
       .then(() => {
         this._populateBasicFlows();
         this._populateJoinedFlows();
@@ -65,10 +59,7 @@ class AppLoader {
 
   saveBookmarks = () => {
     return fs
-      .copyFile(
-        this.activeBookmarksFile,
-        this.appBookmarksFile
-      )
+      .copyFile(this.activeBookmarksFile, this.appBookmarksFile)
       .then(() => {
         return { success: `Bookmarks saved for app ${this.appName}` };
       })
@@ -94,10 +85,7 @@ class AppLoader {
 
   _populateBasicFlows = () => {
     this.basicFlows = fs
-      .readFile(
-        this.appBookmarksFile,
-        "utf8"
-      )
+      .readFile(this.appBookmarksFile, "utf8")
       .then((data) => {
         // Parse the JSON data
         const jsonData = JSON.parse(data);
@@ -161,10 +149,7 @@ class AppLoader {
 
   _populateJoinedFlows = () => {
     this.joinedFlows = fs
-      .readFile(
-        this.joinedBookmarksFile,
-        "utf8"
-      )
+      .readFile(this.joinedBookmarksFile, "utf8")
       .then((data) => {
         return JSON.parse(data);
       })
@@ -178,4 +163,4 @@ class AppLoader {
     this.joinedFlows = null;
   }
 }
-exports.AppLoader = AppLoader;
+module.exports = AppLoader;
