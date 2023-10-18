@@ -5,12 +5,14 @@ const path = require("path");
 const AllFlowsProvider = require("./providers/AllFlowsProvider");
 const FlowBookmarksProvider = require("./providers/FlowBookmarksProvider");
 const AppsManager = require("./AppsManager");
+const TagManager = require("./TagManager");
 const { getJoinFlowConfig } = require("./utils/FileUtils");
 const { FlowType } = require("./utils/Constants");
 
 const bookmarkFileName = "multiColorBookmarks.json";
 const joinedBookmarksFileName = "joinedBookmarks.json";
 const activeBookmarksPath = ".vscode";
+const tagFileName = "bookmarkTags.json";
 
 let myStatusBarItem;
 /**
@@ -43,6 +45,7 @@ function activate(context) {
   let state = new ExtensionState();
   let appsManager;
   let appsFolder;
+  let tagManager;
 
   initializeWithConfiguration();
 
@@ -384,6 +387,106 @@ function activate(context) {
   );
   context.subscriptions.push(copyAppFlowCommand);
 
+  const manageTagsCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.manageTags",
+    () => {
+      const items = [
+        {
+          label: "Create",
+          description: "Create a new tag",
+        },
+        {
+          label: "Edit",
+          description: "Edit name and description of an existing tag",
+        },
+        {
+          label: "Delete",
+          description: "Delete an existing tag",
+        },
+      ];
+
+      const options = {
+        title: "Manage Tags",
+        placeHolder: "Select an option",
+        matchOnDetail: true,
+        ignoreFocusOut: true,
+      };
+
+      vscode.window.showQuickPick(items, options).then((item) => {
+        if (item.label === "Create") {
+          manageCreate().then(({ tag, description }) => {
+            tagManager.addTag(tag, description);
+          });
+        } else if (item.label === "Edit") {
+          vscode.window
+            .showQuickPick(tagManager.listTags(), {
+              placeHolder: "Select a tag to edit",
+              title: "Edit Tag",
+            })
+            .then((oldTag) => {
+              if (oldTag) {
+                manageCreate(oldTag.label, oldTag.description).then(
+                  ({ tag, description }) => {
+                    tagManager.editTag(oldTag.label, tag, description);
+                  }
+                );
+              }
+            });
+        } else if (item.label === "Delete") {
+          vscode.window
+            .showQuickPick(tagManager.listTags(), {
+              placeHolder: "Select a tag to delete",
+              title: "Delete Tag",
+            })
+            .then((tag) => {
+              if (tag) {
+                tagManager.removeTag(tag.label);
+              }
+            });
+        }
+
+        function manageCreate(tagName = "", description = "") {
+          return vscode.window
+            .showInputBox({
+              placeHolder: "Enter tag without spaces (@tag or #tag)",
+              prompt: "Tag Name",
+              value: tagName,
+              ignoreFocusOut: true,
+              validateInput: (tag) => {
+                if (!tag.startsWith("@") && !tag.startsWith("#")) {
+                  return "must start with '@' or '#'";
+                }
+                if (tag.length < 3) {
+                  return "minimum 3 characters long";
+                }
+                if (tag.includes(" ")) {
+                  return "cannot contain spaces";
+                }
+                if (tagManager.start) return null;
+              },
+            })
+            .then((tag) => {
+              // provide all transformations
+              return tag.trim().replace(/[\s<>]/g, "_");
+            })
+            .then((tag) => {
+              return vscode.window
+                .showInputBox({
+                  placeHolder: `Enter description of tag: ${tag}`,
+                  prompt: "Tag Description",
+                  value: description,
+                  ignoreFocusOut: true,
+                })
+                .then((description) => {
+                  return { tag, description };
+                });
+            });
+        }
+      });
+    }
+  );
+  context.subscriptions.push(manageTagsCommand);
+
   function initializeWithConfiguration() {
     const config = vscode.workspace.getConfiguration("codeNavigator");
     let diagramOutputDir = config.get("diagramsDir");
@@ -405,6 +508,7 @@ function activate(context) {
           activeBookmarksPath,
           diagramOutputDir
         );
+        tagManager = new TagManager(path.join(appsFolder, tagFileName));
         state.initialize();
         context.subscriptions.push(appsManager);
       } else {
@@ -423,6 +527,7 @@ function activate(context) {
       this.isInitialized = true;
       this.activeApp = undefined;
       this.isError = false;
+      vscode.commands.executeCommand("setContext", "appWithoutError", true);
     };
     this.setPathError = (isAppPathError, path) => {
       this.activeApp = undefined;
@@ -434,6 +539,7 @@ function activate(context) {
       );
       resetUI("PATH_ERROR", this.isInitialized);
       this.isInitialized = true;
+      vscode.commands.executeCommand("setContext", "appWithoutError", false);
     };
     this.setActiveApp = (appName) => {
       this.activeApp = appName;

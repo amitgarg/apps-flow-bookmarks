@@ -8,14 +8,25 @@ class TagManager {
   }
   addTag(tag, description) {
     if (tag) {
-      tag = tag.trim().replace(/[\s<>]/g, "_");
       this.tags[tag] = description || "";
     }
+  }
+  editTag(tag, newTag, description) {
+    if(tag && newTag) {
+      this.taggedFlows.retagAllFlows(tag, newTag);
+      this.tags[newTag] = description || "";
+      delete this.tags[tag];
+    }
+  }
+  listTags() {
+    return Object.keys(this.tags).map((tag) => {
+      return { label: tag, description: this.tags[tag] };
+    });
   }
   removeTag(tag) {
     if (tag) {
       delete this.tags[tag];
-      this.taggedFlows.untagAllFlows(tag);
+      this.taggedFlows.retagAllFlows(tag);
     }
   }
   getTagsForFlow(appName, flowName) {
@@ -43,7 +54,7 @@ class TagManager {
       })
       .then(({ tags, taggedFlows }) => {
         this.tags = tags || {};
-        this.taggedFlows = new TaggedFlows(taggedFlows);
+        this.taggedFlows = new TaggedFlows(taggedFlows || {});
       });
   };
   save() {
@@ -62,40 +73,44 @@ class TagManager {
 function TaggedFlows(flows = {}) {
   this.flows = flows;
   this.getTagsForFlow = (appName, flowName) => {
-    return this.flows[appName] && this.flows[appName][flowName]
-      ? this.flows[appName][flowName]
-      : [];
+    return (this.flows[appName] && this.flows[appName][flowName]) || [];
   };
   this.tagFlow = (appName, flowName, tag) => {
     if (!this.flows[appName]) {
       this.flows[appName] = { flowName: [tag] };
+    } else if (!this.flows[appName][flowName]) {
+      this.flows[appName][flowName] = [tag];
     } else {
-      if (!this.flows[appName][flowName]) {
-        this.flows[appName][flowName] = [tag];
-      } else {
-        this.flows[appName][flowName].push(tag);
-      }
+      this.flows[appName][flowName].push(tag);
     }
   };
-
   this.untagFlow = (appName, flowName, tag) => {
     let appFlows = this.flows[appName];
+    reTagFromApp(appFlows, flowName, tag);
+  };
+  this.retagAllFlows = (tag, newTag) => {
+    Object.values(this.flows).forEach((appFlows) => {
+      Object.keys(appFlows).forEach((flowName) => {
+        reTagFromApp(appFlows, flowName, tag, newTag);
+      });
+    });
+  };
+
+  function reTagFromApp(appFlows, flowName, tag, newTag) {
     if (appFlows && appFlows[flowName]) {
       const index = appFlows[flowName].indexOf(tag);
       if (index > -1) {
-        appFlows[flowName].splice(index, 1);
+        // remove old tag
+        appFlows[flowName] = appFlows[flowName].splice(index, 1);
+      }
+      if(newTag){
+        // add new tag if provided
+        appFlows[flowName].push(newTag);
       }
       if (appFlows[flowName].length === 0) {
         delete appFlows[flowName];
       }
     }
-  };
-  this.untagAllFlows = (tag) => {
-    Object.keys(this.flows).forEach((appName) => {
-      Object.keys(this.flows[appName]).forEach((flowName) => {
-        this.untagFlow(appName, flowName, tag);
-      });
-    });
-  };
+  }
 }
 module.exports = TagManager;

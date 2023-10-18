@@ -120,6 +120,11 @@
         "command": "acn.bookmarks.removeBookmarksFilter",
         "title": "Disable Filter",
         "icon": "$(search-stop)"
+      },
+      {
+        "command": "acn.bookmarks.manageTags",
+        "title": "Manage Tags",
+        "icon": "$(tag)"
       }
     ],
     "views": {
@@ -173,12 +178,22 @@
         {
           "command": "acn.bookmarks.removeBookmarksFilter",
           "when": "false"
+        },
+        {
+          "command": "acn.bookmarks.manageTags",
+          "when": "false"
         }
       ],
       "view/title": [
         {
           "command": "acn.bookmarks.saveForApp",
           "when": "view == flowBookmarksView",
+          "showOn": "always",
+          "group": "navigation"
+        },
+        {
+          "command": "acn.bookmarks.manageTags",
+          "when": "view == allFlows && appWithoutError == true",
           "showOn": "always",
           "group": "navigation"
         },
@@ -244,6 +259,7 @@
           "group": "inline",
           "when": "view == allFlows && viewItem =~ /copyJson/"
         }
+
       ]
     }
   },
