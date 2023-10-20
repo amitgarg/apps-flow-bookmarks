@@ -124,6 +124,12 @@
       {
         "command": "acn.bookmarks.manageTags",
         "title": "Manage Tags",
+        "category": "ACN",
+        "icon": "$(tag)"
+      },
+      {
+        "command": "acn.bookmarks.manageFlowTags",
+        "title": "Manage Tags For Flow",
         "icon": "$(tag)"
       }
     ],
@@ -180,7 +186,7 @@
           "when": "false"
         },
         {
-          "command": "acn.bookmarks.manageTags",
+          "command": "acn.bookmarks.manageFlowTags",
           "when": "false"
         }
       ],
@@ -243,6 +249,11 @@
           "command": "acn.bookmarks.manageJoinedBookmarks",
           "group": "inline",
           "when": "view == allFlows && viewItem == manageFlows"
+        },
+        {
+          "command": "acn.bookmarks.manageFlowTags",
+          "group": "inline",
+          "when": "view == allFlows && viewItem =~ /tag/"
         },
         {
           "command": "acn.bookmarks.openFlow",

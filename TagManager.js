@@ -29,6 +29,10 @@ class TagManager {
       this.taggedFlows.retagAllFlows(tag);
     }
   }
+
+  setTagsForflow(appName, flowName, tags) {
+    this.taggedFlows.setTagsForflow(appName, flowName, tags);
+  }
   getTagsForFlow(appName, flowName) {
     return this.taggedFlows.getTagsForFlow(appName, flowName);
   }
@@ -75,6 +79,12 @@ function TaggedFlows(flows = {}) {
   this.getTagsForFlow = (appName, flowName) => {
     return (this.flows[appName] && this.flows[appName][flowName]) || [];
   };
+  this.setTagsForflow = (appName, flowName, tags) => {
+    if (tags) {
+      this.flows[appName] = this.flows[appName] || {};
+      this.flows[appName][flowName] = tags;
+    }
+  }
   this.tagFlow = (appName, flowName, tag) => {
     if (!this.flows[appName]) {
       this.flows[appName] = { flowName: [tag] };
