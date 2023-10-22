@@ -47,8 +47,6 @@ function activate(context) {
   let appsFolder;
   let tagManager;
 
-  initializeWithConfiguration();
-
   const defaultAllFlowsProviderData = {
     joinedFlows: {},
     appName: "None",
@@ -61,6 +59,8 @@ function activate(context) {
     treeDataProvider: allFlowsTreeDataProvider,
   });
   context.subscriptions.push(allFlowsTreeView);
+
+  initializeWithConfiguration();
 
   const flowBookmarksProvider = new FlowBookmarksProvider(
     {},
@@ -141,9 +141,7 @@ function activate(context) {
                 joinedFlows,
               };
               allFlowsTreeDataProvider.setData(data);
-              allFlowsTreeDataProvider.refresh();
               flowBookmarksProvider.setData({});
-              flowBookmarksProvider.refresh();
             }
           );
         })
@@ -194,7 +192,6 @@ function activate(context) {
           })
           .then((keywords) => {
             allFlowsTreeDataProvider.setFilter(keywords);
-            allFlowsTreeDataProvider.refresh();
             vscode.commands.executeCommand(
               "setContext",
               "allFlows.filter",
@@ -211,7 +208,6 @@ function activate(context) {
     () => {
       if (!state.isError) {
         allFlowsTreeDataProvider.setFilter("");
-        allFlowsTreeDataProvider.refresh();
         vscode.commands.executeCommand("setContext", "allFlows.filter", false);
       }
     }
@@ -231,7 +227,6 @@ function activate(context) {
           })
           .then((keywords) => {
             flowBookmarksProvider.setFilter(keywords);
-            flowBookmarksProvider.refresh();
             vscode.commands.executeCommand(
               "setContext",
               "flowBookmarks.filter",
@@ -248,7 +243,6 @@ function activate(context) {
     () => {
       if (!state.isError) {
         flowBookmarksProvider.setFilter("");
-        flowBookmarksProvider.refresh();
         vscode.commands.executeCommand(
           "setContext",
           "flowBookmarks.filter",
@@ -323,15 +317,14 @@ function activate(context) {
 
   const openFlowCommand = vscode.commands.registerCommand(
     "acn.bookmarks.openFlow",
-    ({ label, app, flowType }) => {
+    ({ flowName, app, flowType }) => {
       appsManager
-        .resolveFlow(app, label, flowType)
+        .resolveFlow(app, flowName, flowType)
         .then((bookmarks) => {
-          return { flowName: label, bookmarks };
+          return { flowName: flowName, bookmarks };
         })
         .then((data) => {
           flowBookmarksProvider.setData(data);
-          flowBookmarksProvider.refresh();
         });
     }
   );
@@ -339,8 +332,8 @@ function activate(context) {
 
   const createDiagramCommand = vscode.commands.registerCommand(
     "acn.bookmarks.diagram",
-    ({ label, flowType, app }) => {
-      appsManager.generateDiagram(app, label, flowType).then((path) => {
+    ({ flowName, flowType, app }) => {
+      appsManager.generateDiagram(app, flowName, flowType).then((path) => {
         if (path) {
           vscode.workspace.openTextDocument(path).then((document) => {
             vscode.window.showTextDocument(document, {
@@ -355,20 +348,20 @@ function activate(context) {
 
   const copyAppFlowCommand = vscode.commands.registerCommand(
     "acn.bookmarks.copyAppFlow",
-    ({ label, flowType, app }) => {
+    ({ flowName, flowType, app }) => {
       let textToCopyPromise;
       if (flowType === FlowType.JOINED) {
         textToCopyPromise = appsManager
           .getAppLoader(app)
           .joinedFlows.then((config) => {
-            return config[label];
+            return config[flowName];
           })
           .then((subflows) => {
             return subflows.map(getJoinFlowConfig).join(",");
           });
       } else {
         textToCopyPromise = Promise.resolve(
-          getJoinFlowConfig({ app, flow: label })
+          getJoinFlowConfig({ app, flow: flowName })
         );
       }
       textToCopyPromise.then((textToCopy) => {
@@ -414,9 +407,11 @@ function activate(context) {
 
       vscode.window.showQuickPick(items, options).then((item) => {
         if (item.label === "Create") {
-          manageCreate().then(({ tag, description }) => {
-            tagManager.addTag(tag, description);
-          });
+          manageCreate()
+            .then(({ tag, description }) => {
+              tagManager.addTag(tag, description);
+            })
+            .then(tagManager.save);
         } else if (item.label === "Edit") {
           vscode.window
             .showQuickPick(tagManager.listTags(), {
@@ -425,11 +420,11 @@ function activate(context) {
             })
             .then((oldTag) => {
               if (oldTag) {
-                manageCreate(oldTag.label, oldTag.description).then(
-                  ({ tag, description }) => {
+                manageCreate(oldTag.label, oldTag.description)
+                  .then(({ tag, description }) => {
                     tagManager.editTag(oldTag.label, tag, description);
-                  }
-                );
+                  })
+                  .then(tagManager.save);
               }
             });
         } else if (item.label === "Delete") {
@@ -442,7 +437,8 @@ function activate(context) {
               if (tag) {
                 tagManager.removeTag(tag.label);
               }
-            });
+            })
+            .then(tagManager.save);
         }
 
         function manageCreate(tagName = "", description = "") {
@@ -487,6 +483,33 @@ function activate(context) {
   );
   context.subscriptions.push(manageTagsCommand);
 
+  const manageFlowTagsCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.manageFlowTags",
+    ({ flowName, flowType, app }) => {
+      let allTags = tagManager.listTags();
+      let existingTags = tagManager.getTagsForFlow(app, flowName);
+      allTags.forEach((tag) => {
+        tag.picked = existingTags.includes(tag.label);
+      });
+      vscode.window
+        .showQuickPick(allTags, {
+          placeHolder: "Search for a tag",
+          title: "Tag the flow",
+          canPickMany: true,
+          matchOnDescription: true,
+        })
+        .then((tags) => {
+          tagManager.setTagsForflow(
+            app,
+            flowName,
+            tags.map((tag) => tag.label)
+          );
+        })
+        .then(tagManager.save);
+    }
+  );
+  context.subscriptions.push(manageFlowTagsCommand);
+
   function initializeWithConfiguration() {
     const config = vscode.workspace.getConfiguration("codeNavigator");
     let diagramOutputDir = config.get("diagramsDir");
@@ -508,7 +531,10 @@ function activate(context) {
           activeBookmarksPath,
           diagramOutputDir
         );
-        tagManager = new TagManager(path.join(appsFolder, tagFileName));
+        tagManager = new TagManager(
+          path.join(projectDir, appsFolder, tagFileName)
+        );
+        allFlowsTreeDataProvider.setTagManager(tagManager);
         state.initialize();
         context.subscriptions.push(appsManager);
       } else {
@@ -551,16 +577,15 @@ function activate(context) {
     var resetUI = (status, refreshTrees) => {
       if (refreshTrees) {
         allFlowsTreeDataProvider.setData(defaultAllFlowsProviderData);
-        allFlowsTreeDataProvider.refresh();
         flowBookmarksProvider.setData({});
-        flowBookmarksProvider.refresh();
       }
-      myStatusBarItem.text = `Bookmarks: ${status}`;
-      myStatusBarItem.color =
+      myStatusBarItem.text = `$(bookmark) ${status}`;
+      myStatusBarItem.command = "acn.bookmarks.reset";
+      myStatusBarItem.backgroundColor =
         status == "PATH_ERROR"
-          ? "#F00C"
+          ? new vscode.ThemeColor("statusBarItem.errorBackground")
           : status == "Ready"
-          ? "#0F0C"
+          ? new vscode.ThemeColor("statusBarItem.warningBackground")
           : undefined;
       myStatusBarItem.show();
       return vscode.commands.executeCommand("flowbookmark.clearAll");

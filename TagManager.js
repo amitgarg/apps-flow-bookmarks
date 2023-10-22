@@ -4,50 +4,51 @@ class TagManager {
     this.tagFilePath = tagFilePath;
     this.tags;
     this.taggedFlows;
+    this.observers = [];
     this._populateTags();
   }
-  addTag(tag, description) {
+  subscribe(observer) {
+    this.observers.push(observer);
+  }
+
+  unsubscribe(observer) {
+    this.observers = this.observers.filter((obs) => obs !== observer);
+  }
+
+  notify() {
+    this.observers.forEach((observer) => observer.update());
+  }
+  addTag = (tag, description) => {
     if (tag) {
       this.tags[tag] = description || "";
     }
-  }
-  editTag(tag, newTag, description) {
-    if(tag && newTag) {
+  };
+  editTag = (tag, newTag, description) => {
+    if (tag && newTag) {
       this.taggedFlows.retagAllFlows(tag, newTag);
       this.tags[newTag] = description || "";
       delete this.tags[tag];
     }
-  }
-  listTags() {
+  };
+  listTags = () => {
     return Object.keys(this.tags).map((tag) => {
       return { label: tag, description: this.tags[tag] };
     });
-  }
-  removeTag(tag) {
+  };
+  removeTag = (tag) => {
     if (tag) {
       delete this.tags[tag];
       this.taggedFlows.retagAllFlows(tag);
     }
-  }
+  };
 
-  setTagsForflow(appName, flowName, tags) {
+  setTagsForflow = (appName, flowName, tags) => {
     this.taggedFlows.setTagsForflow(appName, flowName, tags);
-  }
-  getTagsForFlow(appName, flowName) {
+  };
+  getTagsForFlow = (appName, flowName) => {
     return this.taggedFlows.getTagsForFlow(appName, flowName);
-  }
+  };
 
-  tagFlow(appName, flowName, tag) {
-    if (tag && this.tags[tag]) {
-      this.taggedFlows.tagFlow(appName, flowName, tag);
-    }
-  }
-
-  untagFlow(appName, flowName, tag) {
-    if (tag && this.tags[tag]) {
-      this.taggedFlows.untagFlow(appName, flowName, tag);
-    }
-  }
   _populateTags = () => {
     fs.readFile(this.tagFilePath, "utf8")
       .then((data) => {
@@ -61,17 +62,22 @@ class TagManager {
         this.taggedFlows = new TaggedFlows(taggedFlows || {});
       });
   };
-  save() {
+  save = () => {
     let fileContent = JSON.stringify({
       tags: this.tags,
       taggedFlows: this.taggedFlows.flows,
     });
-    return fs.writeFile(this.tagFilePath, fileContent).catch((err) => {
-      return {
-        error: `Unable to save tags to ${this.tagFilePath}`,
-      };
-    });
-  }
+    return fs
+      .writeFile(this.tagFilePath, fileContent)
+      .then(() => {
+        this.notify();
+      })
+      .catch((err) => {
+        return {
+          error: `Unable to save tags to ${this.tagFilePath}`,
+        };
+      });
+  };
 }
 
 function TaggedFlows(flows = {}) {
@@ -84,20 +90,8 @@ function TaggedFlows(flows = {}) {
       this.flows[appName] = this.flows[appName] || {};
       this.flows[appName][flowName] = tags;
     }
-  }
-  this.tagFlow = (appName, flowName, tag) => {
-    if (!this.flows[appName]) {
-      this.flows[appName] = { flowName: [tag] };
-    } else if (!this.flows[appName][flowName]) {
-      this.flows[appName][flowName] = [tag];
-    } else {
-      this.flows[appName][flowName].push(tag);
-    }
   };
-  this.untagFlow = (appName, flowName, tag) => {
-    let appFlows = this.flows[appName];
-    reTagFromApp(appFlows, flowName, tag);
-  };
+
   this.retagAllFlows = (tag, newTag) => {
     Object.values(this.flows).forEach((appFlows) => {
       Object.keys(appFlows).forEach((flowName) => {
@@ -111,9 +105,9 @@ function TaggedFlows(flows = {}) {
       const index = appFlows[flowName].indexOf(tag);
       if (index > -1) {
         // remove old tag
-        appFlows[flowName] = appFlows[flowName].splice(index, 1);
+        appFlows[flowName].splice(index, 1);
       }
-      if(newTag){
+      if (newTag) {
         // add new tag if provided
         appFlows[flowName].push(newTag);
       }

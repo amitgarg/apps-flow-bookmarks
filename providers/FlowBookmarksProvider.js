@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const path = require("path");
+const TreeProvider = require("./TreeProvider");
 const { getHighlights } = require("../utils/StyleUtils");
 const iconPath = {
   light: path.join(__filename, "../..", "images", "bookmark.svg"),
@@ -9,18 +10,12 @@ const missingBookmarkIconPath = {
   light: path.join(__filename, "../..", "images", "bookmark-missing.svg"),
   dark: path.join(__filename, "../..", "images", "bookmark-missing.svg"),
 };
-class FlowBookmarksProvider {
+class FlowBookmarksProvider extends TreeProvider {
   constructor(flow, projectDir) {
-    this._onDidChangeTreeData = new vscode.EventEmitter();
-    this.onDidChangeTreeData = this._onDidChangeTreeData.event;
-    this.filterValue = "";
-    this.data = [];
-    this.filteredData = [];
-    this.setData(flow);
-    this.projectDir = projectDir;
+    super(flow, projectDir);
   }
-  _prepareData(flow) {
-    let { flowName, bookmarks } = flow;
+  _prepareData() {
+    let { flowName, bookmarks } = this.model;
     if (flowName && bookmarks && bookmarks.length > 0) {
       let data = {
         label: flowName,
@@ -28,7 +23,7 @@ class FlowBookmarksProvider {
       };
       data.children = bookmarks.map((bookmark, index) => {
         let lineNumber = parseInt(bookmark.lineNumber) + 1;
-        let label = `${index}.${bookmark.description}`;
+        let label = `${index}. ${bookmark.description}`;
         let bookmarkElement = {
           label: { label, highlights: getHighlights(label) },
           description: `${bookmark.fileName} - ${lineNumber}`,
@@ -51,38 +46,29 @@ class FlowBookmarksProvider {
         };
         return bookmarkElement;
       });
-      return [data];
+      this.treeData = [data];
+    } else {
+      this.treeData = [];
     }
-    return [];
-  }
-  _filterData() {
-    if (!this.filterValue) {
-      return this.data;
-    }
-    return this.data.map((flow) => {
-      let newFlow = {
-        label: `${flow.label} (FILTER: ${this.filterValue})`,
-        type: flow.type,
-      };
-      newFlow.children = flow.children.filter(({ tooltip, description }) => {
-        return (
-          description.toUpperCase().includes(this.filterValue) ||
-          tooltip.toUpperCase().includes(this.filterValue)
-        );
-      });
-      return newFlow;
-    });
   }
 
-  setData(flow) {
-    this.data = this._prepareData(flow);
-    this.filteredData = this._filterData();
-  }
-  setFilter(filterValue) {
-    const filter = filterValue ? filterValue.toUpperCase() : "";
-    if (this.filterValue != filter) {
-      this.filterValue = filter;
-      this.filteredData = this._filterData();
+  _filterData() {
+    if (!this.filterValue) {
+      this.filteredData = this.treeData;
+    } else {
+      this.filteredData = this.treeData.map((flow) => {
+        let newFlow = {
+          label: `${flow.label} (FILTER: ${this.filterValue})`,
+          type: flow.type,
+        };
+        newFlow.children = flow.children.filter(({ tooltip, description }) => {
+          return (
+            description.toUpperCase().includes(this.filterValue) ||
+            tooltip.toUpperCase().includes(this.filterValue)
+          );
+        });
+        return newFlow;
+      });
     }
   }
 
@@ -108,14 +94,6 @@ class FlowBookmarksProvider {
     return item;
   }
 
-  getChildren(element) {
-    if (!element) {
-      return Promise.resolve(this.filteredData);
-    } else {
-      // Return the children of the element
-      return Promise.resolve(element.children);
-    }
-  }
   getParent(element) {
     // implementation here
     if (!element || element.type === "flow") {
@@ -126,10 +104,6 @@ class FlowBookmarksProvider {
       );
       return Promise.resolve(parent);
     }
-  }
-
-  refresh() {
-    this._onDidChangeTreeData.fire();
   }
 }
 module.exports = FlowBookmarksProvider;
