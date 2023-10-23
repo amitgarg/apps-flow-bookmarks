@@ -11,8 +11,8 @@ const missingBookmarkIconPath = {
   dark: path.join(__filename, "../..", "images", "bookmark-missing.svg"),
 };
 class FlowBookmarksProvider extends TreeProvider {
-  constructor(flow, projectDir) {
-    super(flow, projectDir);
+  constructor(flow, {projectDir}) {
+    super(flow, {projectDir});
   }
   _prepareData() {
     let { flowName, bookmarks } = this.model;
@@ -39,7 +39,7 @@ class FlowBookmarksProvider extends TreeProvider {
             command: "acn.bookmarks.openFileToLine",
             title: "Open File",
             arguments: [
-              bookmark.path && path.join(this.projectDir, bookmark.path),
+              bookmark.path && path.join(this.config.projectDir, bookmark.path),
               lineNumber,
             ],
           },

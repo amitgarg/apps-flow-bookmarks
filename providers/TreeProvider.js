@@ -1,23 +1,23 @@
 const vscode = require("vscode");
 class TreeProvider {
-  constructor(model, projectDir) {
+  constructor(model, config) {
     this.filterValue = "";
     this.model = {};
     this.treeData = [];
     this.filteredData = [];
-    this.projectDir = projectDir;
+    this.config = config || {};
 
     this._onDidChangeTreeData = new vscode.EventEmitter();
     this.onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     this.setData(model);
   }
-  _prepareData(){
+  _prepareData() {
     this.treeData = this.model;
-  };
-  _filterData(){
+  }
+  _filterData() {
     this.filteredData = this.treeData;
-  };
+  }
   setData = (model) => {
     this.model = model;
     this._prepareData();
@@ -40,8 +40,8 @@ class TreeProvider {
       return Promise.resolve(element.children);
     }
   };
-  refresh(){
+  refresh() {
     this._onDidChangeTreeData.fire();
-  };
+  }
 }
 module.exports = TreeProvider;

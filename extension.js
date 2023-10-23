@@ -62,11 +62,7 @@ function activate(context) {
 
   initializeWithConfiguration();
 
-  const flowBookmarksProvider = new FlowBookmarksProvider(
-    {},
-    projectDir,
-    context
-  );
+  const flowBookmarksProvider = new FlowBookmarksProvider({}, { projectDir });
   const flowBookmarksTreeView = vscode.window.createTreeView("flowBookmarks", {
     treeDataProvider: flowBookmarksProvider,
   });
