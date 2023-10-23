@@ -248,7 +248,7 @@
         {
           "command": "acn.bookmarks.manageJoinedBookmarks",
           "group": "inline",
-          "when": "view == allFlows && viewItem == manageFlows"
+          "when": "view == allFlows && appLoaded == true && viewItem == manageFlows"
         },
         {
           "command": "acn.bookmarks.manageFlowTags",

@@ -140,22 +140,20 @@ class AllFlowsProvider extends TreeProvider {
       treeItemType =
         element.children.length == 0
           ? vscode.TreeItemCollapsibleState.None
-          : !this.filterValue && element.flowType == FlowType.BASIC
-          ? vscode.TreeItemCollapsibleState.Collapsed
-          : vscode.TreeItemCollapsibleState.Expanded;
+          : element.flowType == FlowType.JOINED || !!this.filterValue
+          ? vscode.TreeItemCollapsibleState.Expanded
+          : vscode.TreeItemCollapsibleState.Collapsed;
     } else if (element.type === "flow") {
       treeItemType =
         element.flowType == FlowType.BASIC || element.children.length == 0
           ? vscode.TreeItemCollapsibleState.None
-          : this.filterValue
+          : !!this.filterValue
           ? vscode.TreeItemCollapsibleState.Expanded
           : vscode.TreeItemCollapsibleState.Collapsed;
-      label = { label, highlights: getHighlights(label) };
     } else if (element.type === "subflow") {
       treeItemType = vscode.TreeItemCollapsibleState.None;
-      label = { label, highlights: getHighlights(label) };
     }
-    let item = new TaggedTreeItem(label, treeItemType, element.flowName);
+    let item = new TaggedTreeItem({ label, highlights: getHighlights(label)}, treeItemType, element.flowName);
     if (element.type === "subflow") {
       item.description = element.description;
     }
