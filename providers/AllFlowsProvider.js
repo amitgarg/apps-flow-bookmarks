@@ -11,8 +11,8 @@ const iconPath = {
   dark: path.join(__filename, "../..", "images", "flow1.svg"),
 };
 class AllFlowsProvider extends TreeProvider {
-  constructor(joinedFlowsData) {
-    super(joinedFlowsData);
+  constructor(allFlows, config) {
+    super(allFlows, config);
   }
   _getTaggedLabel = (appName, flowName) => {
     let label = flowName;

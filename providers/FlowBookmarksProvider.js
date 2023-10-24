@@ -11,8 +11,8 @@ const missingBookmarkIconPath = {
   dark: path.join(__filename, "../..", "images", "bookmark-missing.svg"),
 };
 class FlowBookmarksProvider extends TreeProvider {
-  constructor(flow, {projectDir}) {
-    super(flow, {projectDir});
+  constructor(flowBookmarks, config) {
+    super(flowBookmarks, config);
   }
   _prepareData() {
     let { flowName, bookmarks } = this.model;

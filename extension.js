@@ -53,7 +53,8 @@ function activate(context) {
     basicFlows: {},
   };
   const allFlowsTreeDataProvider = new AllFlowsProvider(
-    defaultAllFlowsProviderData
+    defaultAllFlowsProviderData,
+    { contextKey: "allFlows" }
   );
   const allFlowsTreeView = vscode.window.createTreeView("allFlows", {
     treeDataProvider: allFlowsTreeDataProvider,
@@ -62,7 +63,10 @@ function activate(context) {
 
   initializeWithConfiguration();
 
-  const flowBookmarksProvider = new FlowBookmarksProvider({}, { projectDir });
+  const flowBookmarksProvider = new FlowBookmarksProvider(
+    {},
+    { projectDir, contextKey: "flowBookmarks" }
+  );
   const flowBookmarksTreeView = vscode.window.createTreeView("flowBookmarks", {
     treeDataProvider: flowBookmarksProvider,
   });
@@ -188,11 +192,6 @@ function activate(context) {
           })
           .then((keywords) => {
             allFlowsTreeDataProvider.setFilter(keywords);
-            vscode.commands.executeCommand(
-              "setContext",
-              "allFlows.filter",
-              !!keywords
-            );
           });
       }
     }
@@ -204,7 +203,6 @@ function activate(context) {
     () => {
       if (!state.isError) {
         allFlowsTreeDataProvider.setFilter("");
-        vscode.commands.executeCommand("setContext", "allFlows.filter", false);
       }
     }
   );
@@ -223,11 +221,6 @@ function activate(context) {
           })
           .then((keywords) => {
             flowBookmarksProvider.setFilter(keywords);
-            vscode.commands.executeCommand(
-              "setContext",
-              "flowBookmarks.filter",
-              !!keywords
-            );
           });
       }
     }
@@ -239,11 +232,6 @@ function activate(context) {
     () => {
       if (!state.isError) {
         flowBookmarksProvider.setFilter("");
-        vscode.commands.executeCommand(
-          "setContext",
-          "flowBookmarks.filter",
-          false
-        );
       }
     }
   );

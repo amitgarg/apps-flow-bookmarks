@@ -30,6 +30,11 @@ class TreeProvider {
       this.filterValue = filter;
       this._filterData();
       this.refresh();
+      vscode.commands.executeCommand(
+        "setContext",
+        `${this.config.contextKey}.filter`,
+        !!this.filterValue
+      );
     }
   };
   getChildren = (element) => {
