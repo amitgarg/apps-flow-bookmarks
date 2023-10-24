@@ -390,21 +390,22 @@ function activate(context) {
       };
 
       vscode.window.showQuickPick(items, options).then((item) => {
+        let tagList = tagManager.listTags();
         if (item.label === "Create") {
-          manageCreate()
+          manageCreate(tagList)
             .then(({ tag, description }) => {
               tagManager.addTag(tag, description);
             })
             .then(tagManager.save);
         } else if (item.label === "Edit") {
           vscode.window
-            .showQuickPick(tagManager.listTags(), {
+            .showQuickPick(tagList, {
               placeHolder: "Select a tag to edit",
               title: "Edit Tag",
             })
             .then((oldTag) => {
               if (oldTag) {
-                manageCreate(oldTag.label, oldTag.description)
+                manageCreate(tagList, oldTag.label, oldTag.description)
                   .then(({ tag, description }) => {
                     tagManager.editTag(oldTag.label, tag, description);
                   })
@@ -413,7 +414,7 @@ function activate(context) {
             });
         } else if (item.label === "Delete") {
           vscode.window
-            .showQuickPick(tagManager.listTags(), {
+            .showQuickPick(tagList, {
               placeHolder: "Select a tag to delete",
               title: "Delete Tag",
             })
@@ -425,7 +426,7 @@ function activate(context) {
             .then(tagManager.save);
         }
 
-        function manageCreate(tagName = "", description = "") {
+        function manageCreate(tagList, tagName = "", description = "") {
           return vscode.window
             .showInputBox({
               placeHolder: "Enter tag without spaces (@tag or #tag)",
@@ -442,7 +443,9 @@ function activate(context) {
                 if (tag.includes(" ")) {
                   return "cannot contain spaces";
                 }
-                if (tagManager.start) return null;
+                if(tagList.find((t) => t.label === tag)) {
+                  return "already exists";
+                }
               },
             })
             .then((tag) => {
