@@ -100,11 +100,10 @@ SequenceDiagramManager.prototype.commit = function (step) {
 SequenceDiagramManager.prototype.checkoutBranch = function () {
   let prevStep;
   return (step) => {
-    const fileName = this.codeToFileMap[step.code].fileName;
-    const shortenedPath = this.codeToFileMap[step.code].shortenedPath;
+    const {fileName, shortenedPath, rootLevel} = this.codeToFileMap[step.code];
     if (!this.branches[shortenedPath]) {
       this.branches[shortenedPath] = true;
-      this.gitFlow.push(`participant ${step.code} as ${fileName}`);
+      this.gitFlow.push(`participant ${step.code} as ${rootLevel}<br/>${fileName}`);
     }
     if (prevStep && prevStep.code !== step.code) {
       this.gitFlow.push(`${prevStep.code} -->> ${step.code}: `);

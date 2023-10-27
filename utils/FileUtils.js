@@ -1,5 +1,5 @@
 function handleFileCode() {
-	const codeToFileMap = { main: { fileName: 'main', filePath: 'main', shortenedPath: 'main' }, FLOW_NOT_FOUND:{fileName: '', filePath: '', shortenedPath: 'FLOW_NOT_FOUND' } };
+	const codeToFileMap = { main: { fileName: 'main', filePath: 'main', shortenedPath: 'main', rootLevel:"" }, FLOW_NOT_FOUND:{fileName: '', filePath: '', shortenedPath: 'FLOW_NOT_FOUND',rootLevel:"" } };
 	let counter = 0;
 	const SKIP_FIRST_LEVEL_FOLDERS = ['apps', 'bridge-migration', 'components', 'commands'];
 	return {
@@ -28,7 +28,7 @@ function handleFileCode() {
 				}
 			}
 			const shortenedPath = [rootLevel, '...', fileName].join('/');
-			codeToFileMap[code] = { fileName, filePath, shortenedPath };
+			codeToFileMap[code] = { fileName, filePath, shortenedPath, rootLevel };
 			return code;
 		},
 		getCodeToFileMap: () => codeToFileMap,
