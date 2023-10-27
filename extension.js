@@ -443,7 +443,7 @@ function activate(context) {
                 if (tag.includes(" ")) {
                   return "cannot contain spaces";
                 }
-                if(tagList.find((t) => t.label === tag)) {
+                if (tagList.find((t) => t.label === tag)) {
                   return "already exists";
                 }
               },
@@ -503,6 +503,7 @@ function activate(context) {
     let projectName = config.get("projectName");
     let tagsDir = config.get("tagsDir");
     let diagramsType = config.get("diagramsType");
+    let showLineNumbers = config.get("showLineNumbers");
     appsFolder = config.get("appsDir");
 
     projectDir = getProjectDir(projectName);
@@ -519,7 +520,8 @@ function activate(context) {
           appsFolder,
           activeBookmarksPath,
           diagramOutputDir,
-          diagramsType
+          diagramsType,
+          showLineNumbers
         );
         tagManager = new TagManager(
           path.join(projectDir, tagsDir, tagFileName)

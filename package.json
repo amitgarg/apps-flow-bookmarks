@@ -44,7 +44,8 @@
         "codeNavigator.diagramsDir": {
           "type": "string",
           "default": "docs/flows",
-          "description": "Path where all the diagrams will be exported"
+          "description": "Path where all the diagrams will be exported",
+          "category": "diagram"
         },
         "codeNavigator.diagramsType": {
           "type": "string",
@@ -53,7 +54,14 @@
             "gitgraph"
           ],
           "default": "gitgraph",
-          "description": "Type of mermaid diagram to be generated"
+          "description": "Type of mermaid diagram to be generated",
+          "category": "diagram"
+        },
+        "codeNavigator.showLineNumbers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show line numbers in diagrams",
+          "category": "diagram"
         }
       }
     },
@@ -284,7 +292,6 @@
           "group": "inline",
           "when": "view == allFlows && viewItem =~ /copyJson/"
         }
-
       ]
     }
   },

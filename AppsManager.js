@@ -15,7 +15,8 @@ class AppsManager {
     appsFolder,
     activeBookmarksPath,
     diagramOutputDir,
-    diagramsType
+    diagramsType,
+    showLineNumbers
   ) {
     this.context = context;
     this.projectDir = projectDir;
@@ -25,6 +26,7 @@ class AppsManager {
     this.activeBookmarksPath = activeBookmarksPath;
     this.diagramOutputDir = diagramOutputDir;
     this.diagramsType = diagramsType;
+    this.showLineNumbers = showLineNumbers;
     this.appLoaders = {};
     this.fileCodeUtils = handleFileCode();
     this.apps = [];
@@ -124,7 +126,7 @@ class AppsManager {
           this.fileCodeUtils.getCodeToFileMap(),
           flowName,
           flow,
-          flowType
+          this.showLineNumbers
         );
       })
       .then((markdown) => {
