@@ -23,14 +23,25 @@ This extesion provides functionalities to manage bookmarks specific to Apps.
 
 ### Settings
 
-- `codeNavigator.diagramsDir`
-to configure the directory where the diagrams will be saved. The default value is `docs/flows`
+- `codeNavigator.projectName`
+to configure the project name. The default value is `teams-modular-packages`
+
+- `codeNavigator.tagsDir`
+to configure the directory where the tags file is located. The default value is `.vscode`
 
 - `codeNavigator.appsDir`
 to configure the directory where the apps are located. The default value is `packages/apps`
 
-- `codeNavigator.projectName`
-to configure the project name. The default value is `teams-modular-packages`
+- `codeNavigator.diagramsDir`
+to configure the directory where the diagrams will be saved. The default value is `docs/flows`
+
+- `codeNavigator.diagramsType`
+to configure the type of diagrams to be generated. The default value is `gitgraph`. Current supported types are
+  - `gitgraph` : generates git graph diagrams
+  - `sequence` : generates sequence diagrams
+
+- `codeNavigator.showLineNumbers`
+to configure whether to show line numbers in the diagrams. The default value is true
 
 ### Commands contributed to Command Palette
 
@@ -45,6 +56,9 @@ saves bookmarks for the active app. It will save the bookmarks in the `{appsDir}
 
 - `ACN: Manage Joined Flows for an App`
 manages joined flows for an app. It will open the `{appsDir}/{apps-name}/joinedBookmarks.json` file in editor.
+
+- `ACN: Manage Tags`
+manages tags for the project. All the tags are stored in `{tagsDir}/bookmarkTags.json` file. You may add/edit/remove tags by selecting appropriate option. on edit/remove tag, all the bookmarks with that tag will be updated.
 
 - `ACN: Search Flows Across Apps with keywords`
 This command searches flows across apps with keywords. It opens the Search Panel, user can see which all apps are listed in the search results. 
@@ -74,10 +88,18 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
 - `ALL FLOWS`
     - Lists all Basic and Joined flows
     - Reload Both types of flows for the app again (affects all views)
+    - Manage project wide tags
+        - add new tag
+        - edit tag
+        - remove tag
     - Search flows in the app with  (matches any of below)
         - text
         - app name (for joined flows)
+    - highlights the tags for each flow
     - Copy JSON snippet for a flow ( these snippets can be used to configure joined flows in joinedBookmarks.json)
+    - modify tags for a flow
+        - add tags
+        - remove tags
     - Generate Git Graph diagram of the flow
         - saves the diagram as `{diagramsDir}/{apps-name}/{flow-type}-{flow-name}.md`
         - opens the diagram in editor
@@ -91,6 +113,14 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
        - file name
         - text or any tags in bookmark name (any @tag OR #tag which can be agreed on team level) 
     - Clicking on a bookmark will open the file at specific line in editor
+
+### Status Bar Items
+- `Bookmark Bar`
+  - show bookmark icon and status text in status bar, 3 type of status
+    - PATH_ERROR : when the path to any file in config is not correct
+    - READY: when all the paths are correct
+    - {app-name} : when the bookmarks are loaded for an app
+  - on click calls the command `ACN: Reset`
 
 ## Problems currently faced by Devs
 
