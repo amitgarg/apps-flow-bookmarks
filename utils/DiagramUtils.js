@@ -71,7 +71,7 @@ function generateGitGraphMarkdown(
   return gitManager.generateDiagram();
 }
 function getStepName(stepName, showLineNumbers, lineNumber = 0) {
-  return `${stepName}${showLineNumbers ? ` (${lineNumber})`: ''}`;
+  return `${stepName}${showLineNumbers ? ` (${lineNumber})` : ""}`;
 }
 function SequenceDiagramManager(codeToFileMap, flowName, showLineNumbers) {
   this.codeToFileMap = codeToFileMap;
@@ -100,10 +100,17 @@ SequenceDiagramManager.prototype.commit = function (step) {
 SequenceDiagramManager.prototype.checkoutBranch = function () {
   let prevStep;
   return (step) => {
-    const {fileName, shortenedPath, rootLevel} = this.codeToFileMap[step.code];
+    const { fileName, shortenedPath, rootLevel } =
+      this.codeToFileMap[step.code];
     if (!this.branches[shortenedPath]) {
       this.branches[shortenedPath] = true;
-      this.gitFlow.push(`participant ${step.code} as ${rootLevel}<br/>${fileName}`);
+      if (prevStep) {
+        // for adding spacing for rendering of file name box of current step
+        this.gitFlow.push(`Note over ${prevStep.code}: .`);
+      }
+      this.gitFlow.push(
+        `create participant ${step.code} as ${rootLevel}<br/>${fileName}`
+      );
     }
     if (prevStep && prevStep.code !== step.code) {
       this.gitFlow.push(`${prevStep.code} -->> ${step.code}: `);
@@ -122,7 +129,7 @@ config:
     noteBkgColor: "#FFFFFF"
     noteBorderColor: "#FFFFFF"
   sequence:
-    actorMargin: 15
+    actorMargin: -75
 ---`,
     "\tsequenceDiagram",
     ...this.gitFlow.map((line) => `\t\t${line}`),
