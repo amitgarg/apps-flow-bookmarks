@@ -501,6 +501,8 @@ function activate(context) {
     const config = vscode.workspace.getConfiguration("codeNavigator");
     let diagramOutputDir = config.get("diagramsDir");
     let projectName = config.get("projectName");
+    let tagsDir = config.get("tagsDir");
+    let diagramsType = config.get("diagramsType");
     appsFolder = config.get("appsDir");
 
     projectDir = getProjectDir(projectName);
@@ -516,10 +518,11 @@ function activate(context) {
           joinedBookmarksFileName,
           appsFolder,
           activeBookmarksPath,
-          diagramOutputDir
+          diagramOutputDir,
+          diagramsType
         );
         tagManager = new TagManager(
-          path.join(projectDir, appsFolder, tagFileName)
+          path.join(projectDir, tagsDir, tagFileName)
         );
         allFlowsTreeDataProvider.setTagManager(tagManager);
         state.initialize();

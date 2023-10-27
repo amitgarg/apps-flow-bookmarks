@@ -3,7 +3,7 @@ const fsPromises = require("fs").promises;
 const path = require("path");
 const { handleFileCode } = require("./utils/FileUtils");
 const AppLoader = require("./AppLoader");
-const { generateGitGraphMarkdown } = require("./utils/DiagramUtils");
+const { generateDiagram } = require("./utils/DiagramUtils");
 const { FlowType } = require("./utils/Constants");
 
 class AppsManager {
@@ -14,7 +14,8 @@ class AppsManager {
     joinedBookmarksFileName,
     appsFolder,
     activeBookmarksPath,
-    diagramOutputDir
+    diagramOutputDir,
+    diagramsType
   ) {
     this.context = context;
     this.projectDir = projectDir;
@@ -23,6 +24,7 @@ class AppsManager {
     this.appsFolder = appsFolder;
     this.activeBookmarksPath = activeBookmarksPath;
     this.diagramOutputDir = diagramOutputDir;
+    this.diagramsType = diagramsType;
     this.appLoaders = {};
     this.fileCodeUtils = handleFileCode();
     this.apps = [];
@@ -117,7 +119,8 @@ class AppsManager {
   generateDiagram = (appName, flowName, flowType) => {
     return this.resolveFlow(appName, flowName, flowType)
       .then((flow) => {
-        return generateGitGraphMarkdown(
+        return generateDiagram(
+          this.diagramsType,
           this.fileCodeUtils.getCodeToFileMap(),
           flowName,
           flow,

@@ -36,10 +36,24 @@
           "default": "packages/apps",
           "description": "Path where all the apps are located in the project"
         },
+        "codeNavigator.tagsDir": {
+          "type": "string",
+          "default": ".vscode",
+          "description": "Path where all the tags for the project will be stored"
+        },
         "codeNavigator.diagramsDir": {
           "type": "string",
           "default": "docs/flows",
           "description": "Path where all the diagrams will be exported"
+        },
+        "codeNavigator.diagramsType": {
+          "type": "string",
+          "enum": [
+            "sequence",
+            "gitgraph"
+          ],
+          "default": "gitgraph",
+          "description": "Type of mermaid diagram to be generated"
         }
       }
     },
