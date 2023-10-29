@@ -15,11 +15,13 @@ class FlowBookmarksProvider extends TreeProvider {
     super(flowBookmarks, config);
   }
   _prepareData() {
-    let { flowName, bookmarks } = this.model;
+    let { flowName, bookmarks, app, flowType } = this.model;
     if (flowName && bookmarks && bookmarks.length > 0) {
       let data = {
         label: flowName,
         type: "flow",
+        app,
+        flowType
       };
       data.children = bookmarks.map((bookmark, index) => {
         let lineNumber = parseInt(bookmark.lineNumber) + 1;

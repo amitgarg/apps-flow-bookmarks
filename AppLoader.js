@@ -32,12 +32,6 @@ class AppLoader {
         this.basicFlows = {};
         this.joinedFlows = {};
         this.onChangeBookmarksStatus(this.appName, true);
-        return { success: `Bookmarks initialized for app ${this.appName}` };
-      })
-      .catch((err) => {
-        return {
-          error: `Unable to initialize bookmarks for app ${this.appName}`,
-        };
       });
   };
 
@@ -50,22 +44,12 @@ class AppLoader {
       .then(() => {
         this._populateBasicFlows();
         this._populateJoinedFlows();
-        return { success: `Bookmarks loaded for app ${this.appName}` };
-      })
-      .catch((err) => {
-        return { error: `Unable to Load Bookmarks for app ${this.appName}` };
       });
   };
 
   saveBookmarks = () => {
     return fs
-      .copyFile(this.activeBookmarksFile, this.appBookmarksFile)
-      .then(() => {
-        return { success: `Bookmarks saved for app ${this.appName}` };
-      })
-      .catch((err) => {
-        return { error: `Unable to save Bookmarks for app ${this.appName}` };
-      });
+      .copyFile(this.activeBookmarksFile, this.appBookmarksFile);
   };
 
   manageJoinedBookmarks = () => {
@@ -105,7 +89,7 @@ class AppLoader {
               description: description,
               text,
               lineNumber,
-              path: key,
+              path: key.substring(1),
               fileName: codeToFileMap[code].fileName,
             };
           });

@@ -7,6 +7,7 @@ const FlowBookmarksProvider = require("./providers/FlowBookmarksProvider");
 const AppsManager = require("./AppsManager");
 const TagManager = require("./TagManager");
 const { getJoinFlowConfig } = require("./utils/FileUtils");
+const { runTest } = require("./utils/TestUtils");
 const { FlowType } = require("./utils/Constants");
 
 const bookmarkFileName = "multiColorBookmarks.json";
@@ -18,10 +19,23 @@ let myStatusBarItem;
 /**
  * @param {vscode.ExtensionContext} context
  */
+
 function activate(context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
-  console.log(
+  const outputChannel = vscode.window.createOutputChannel(
+    "Appwise Code Navigator"
+  );
+  function log(message, error) {
+    if (!error) {
+      outputChannel.appendLine(`Success: ${message}`);
+    } else {
+      outputChannel.appendLine(`Failed: ${message}`);
+    }
+  }
+  // outputChannel.show();
+
+  log(
     'Congratulations, your extension "appwise-code-navigator" is now active!'
   );
 
@@ -32,7 +46,7 @@ function activate(context) {
   // Activate the extension if it's not already activated
   if (!mcbExtension.isActive) {
     mcbExtension.activate().then(() => {
-      console.log("MCB Extension activated");
+      log("MCB Extension activated");
     });
   }
 
@@ -77,6 +91,7 @@ function activate(context) {
     "acn.bookmarks.reset",
     () => {
       initializeWithConfiguration();
+      log("Resetting plugin");
     }
   );
   context.subscriptions.push(actionReset);
@@ -91,7 +106,9 @@ function activate(context) {
             title: "Create bookmarks related to App",
           })
           .then((appName) => {
-            loadBookmarksFromApp(appName, true);
+            loadBookmarksFromApp(appName, true).then(() => {
+              log(`Initialize bookmarks for App: ${appName}`);
+            });
           });
       }
     }
@@ -107,7 +124,11 @@ function activate(context) {
             placeHolder: "Select an App",
             title: "Load bookmarks from App",
           })
-          .then(loadBookmarksFromApp);
+          .then((appName) => {
+            loadBookmarksFromApp(appName).then(() => {
+              log(`Load bookmarks for App: ${appName}`);
+            });
+          });
       }
     }
   );
@@ -117,7 +138,9 @@ function activate(context) {
     "acn.bookmarks.reloadFlows",
     () => {
       if (state.activeApp) {
-        loadBookmarksFromApp(state.activeApp);
+        loadBookmarksFromApp(state.activeApp).then(() => {
+          log(`Reload bookmarks for App: ${state.activeApp}`);
+        });
       }
     }
   );
@@ -128,8 +151,7 @@ function activate(context) {
       const appLoader = appsManager.getAppLoader(appName);
       return appLoader
         .loadBookmarks(intialize)
-        .then(({ success }) => {
-          vscode.window.showInformationMessage(success);
+        .then(() => {
           state.setActiveApp(appName);
         })
         .then(() => {
@@ -172,6 +194,7 @@ function activate(context) {
             .then((appName) => {
               const appLoader = appsManager.getAppLoader(appName);
               appLoader.manageJoinedBookmarks();
+              log(`Manage Joined Flows for App: ${appName}`);
             });
         }
       }
@@ -192,6 +215,7 @@ function activate(context) {
           })
           .then((keywords) => {
             allFlowsTreeDataProvider.setFilter(keywords);
+            log(`Searching Flows with ${keywords}`);
           });
       }
     }
@@ -203,6 +227,7 @@ function activate(context) {
     () => {
       if (!state.isError) {
         allFlowsTreeDataProvider.setFilter("");
+        log(`Remove Flows Filter`);
       }
     }
   );
@@ -221,6 +246,7 @@ function activate(context) {
           })
           .then((keywords) => {
             flowBookmarksProvider.setFilter(keywords);
+            log(`Searching Bookmarks with ${keywords}`);
           });
       }
     }
@@ -232,6 +258,7 @@ function activate(context) {
     () => {
       if (!state.isError) {
         flowBookmarksProvider.setFilter("");
+        log(`Remove Bookmarks Filter`);
       }
     }
   );
@@ -252,6 +279,32 @@ function activate(context) {
   );
   context.subscriptions.push(openFileToLineCommand);
 
+  const runTestCallback =
+    (coverage) =>
+    ({ bookmark, type, app, flowType, label: flowName }) => {
+      if (type == "flow") {
+        appsManager.resolveFlow(app, flowName, flowType).then((bookmarks) => {
+          runTest({ type, flowName, bookmarks }, coverage);
+          log(`Running test for Flow: "${flowName}"`);
+        });
+      } else {
+        runTest({ type, bookmarks: [bookmark] }, coverage);
+        log(`Running test for Bookmark: "${bookmark.description}"`);
+      }
+    };
+
+  const runTestCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.runTest",
+    runTestCallback(false)
+  );
+  context.subscriptions.push(runTestCommand);
+
+  const runTestCoverageCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.runTestCoverage",
+    runTestCallback(true)
+  );
+  context.subscriptions.push(runTestCoverageCommand);
+
   let actionSaveActiveBookmarksToAnApp = vscode.commands.registerCommand(
     "acn.bookmarks.saveForApp",
     () => {
@@ -260,10 +313,12 @@ function activate(context) {
         vscode.commands
           .executeCommand("flowbookmark.exportMyBookmarks")
           .then(appLoader.saveBookmarks)
-          .then(({ success }) => {
-            vscode.window.showInformationMessage(success);
+          .then(() => {
+            log(`Save bookmarks for App: ${state.activeApp}`);
             //removed the need to reload the bookmarks manually
-            loadBookmarksFromApp(state.activeApp);
+            loadBookmarksFromApp(state.activeApp).then(() => {
+              log(`Load bookmarks for App: ${state.activeApp}`);
+            });
           });
       }
     }
@@ -305,10 +360,11 @@ function activate(context) {
       appsManager
         .resolveFlow(app, flowName, flowType)
         .then((bookmarks) => {
-          return { flowName: flowName, bookmarks };
+          return { flowName: flowName, bookmarks, app, flowType };
         })
         .then((data) => {
           flowBookmarksProvider.setData(data);
+          log(`Open Flow: "${flowName}"`);
         });
     }
   );
@@ -326,6 +382,7 @@ function activate(context) {
           });
         }
       });
+      log(`Create Diagram for Flow: "${flowName}"`);
     }
   );
   context.subscriptions.push(createDiagramCommand);
@@ -352,12 +409,19 @@ function activate(context) {
         vscode.env.clipboard
           .writeText(textToCopy)
           .then(() => {
+            log(
+              `Json Snippet copied to clipboard for Flow: "${flowName}"\n${textToCopy}`
+            );
             vscode.window.showInformationMessage(
               `Json Snippet copied to clipboard\n\n${textToCopy}`
             );
           })
           .catch((err) => {
-            vscode.window.showErrorMessage("Failed to copy text to clipboard:");
+            log(
+              `Json Snippet copy to clipboard for Flow: "${flowName}"`,
+              false
+            );
+            vscode.window.showErrorMessage("Failed to copy text to clipboard");
           });
       });
     }
@@ -395,6 +459,7 @@ function activate(context) {
           manageCreate(tagList)
             .then(({ tag, description }) => {
               tagManager.addTag(tag, description);
+              log(`Create Tag: ${tag}`);
             })
             .then(tagManager.save);
         } else if (item.label === "Edit") {
@@ -408,6 +473,7 @@ function activate(context) {
                 manageCreate(tagList, oldTag.label, oldTag.description)
                   .then(({ tag, description }) => {
                     tagManager.editTag(oldTag.label, tag, description);
+                    log(`Edit Tag: ${oldTag} to ${tag}`);
                   })
                   .then(tagManager.save);
               }
@@ -421,6 +487,7 @@ function activate(context) {
             .then((tag) => {
               if (tag) {
                 tagManager.removeTag(tag.label);
+                log(`Delete Tag: ${tag.label}`);
               }
             })
             .then(tagManager.save);
@@ -486,11 +553,9 @@ function activate(context) {
           matchOnDescription: true,
         })
         .then((tags) => {
-          tagManager.setTagsForflow(
-            app,
-            flowName,
-            tags.map((tag) => tag.label)
-          );
+          let tagLabels = tags.map((tag) => tag.label);
+          tagManager.setTagsForflow(app, flowName, tagLabels);
+          log(`Tag Flow: "${flowName}" with Tags: [${tagLabels}]`);
         })
         .then(tagManager.save);
     }
@@ -545,6 +610,7 @@ function activate(context) {
       this.isInitialized = true;
       this.activeApp = undefined;
       this.isError = false;
+      log("Extension Initialization with configuration");
       vscode.commands.executeCommand("setContext", "appWithoutError", true);
     };
     this.setPathError = (isAppPathError, path) => {
@@ -557,6 +623,7 @@ function activate(context) {
       );
       resetUI("PATH_ERROR", this.isInitialized);
       this.isInitialized = true;
+      log("Extension Initialization with configuration", false);
       vscode.commands.executeCommand("setContext", "appWithoutError", false);
     };
     this.setActiveApp = (appName) => {

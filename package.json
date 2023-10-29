@@ -153,6 +153,16 @@
         "command": "acn.bookmarks.manageFlowTags",
         "title": "Manage Tags For Flow",
         "icon": "$(tag)"
+      },
+      {
+        "command": "acn.bookmarks.runTest",
+        "title": "Run Test",
+        "icon": "$(play)"
+      },
+      {
+        "command": "acn.bookmarks.runTestCoverage",
+        "title": "Test Coverage",
+        "icon": "$(checklist)"
       }
     ],
     "views": {
@@ -210,6 +220,14 @@
         {
           "command": "acn.bookmarks.manageFlowTags",
           "when": "false"
+        },
+        {
+          "command": "acn.bookmarks.runTest",
+          "when": "false"
+        },
+        {
+          "command": "acn.bookmarks.runTestCoverage",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -265,6 +283,16 @@
         {
           "command": "acn.bookmarks.openFileToLine",
           "group": "navigation",
+          "when": "view == flowBookmarks && viewItem == bookmark"
+        },
+        {
+          "command": "acn.bookmarks.runTest",
+          "group": "inline",
+          "when": "view == flowBookmarks"
+        },
+        {
+          "command": "acn.bookmarks.runTestCoverage",
+          "group": "inline",
           "when": "view == flowBookmarks && viewItem == bookmark"
         },
         {
