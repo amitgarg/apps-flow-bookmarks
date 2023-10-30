@@ -89,7 +89,7 @@ class AppLoader {
               description: description,
               text,
               lineNumber,
-              path: key.substring(1),
+              dirPath: codeToFileMap[code].dirPath,
               fileName: codeToFileMap[code].fileName,
             };
           });
@@ -108,7 +108,7 @@ class AppLoader {
           {
             code: "FLOW_NOT_FOUND",
             description: "--- FLOW_NOT_FOUND ---",
-            path: "",
+            dirPath: "",
             fileName: "file-not-found",
             lineNumber: 0,
           },

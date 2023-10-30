@@ -62,6 +62,18 @@
           "default": true,
           "description": "Show line numbers in diagrams",
           "category": "diagram"
+        },
+        "codeNavigator.testRunCommand": {
+          "type": "string",
+          "default": "yarn test:unit ${path:name}",
+          "description": "Command to run tests, paths variable will be replaced with space separated list of file paths without extension",
+          "category": "test"
+        },
+        "codeNavigator.testRunCoverageCommand": {
+          "type": "string",
+          "default": "yarn test:unit:coverage ${path:name}",
+          "description": "Command to run tests with coverage, paths variable will be replaced with space separated list of file paths without extension",
+          "category": "test"
         }
       }
     },

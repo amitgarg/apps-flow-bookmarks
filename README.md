@@ -43,6 +43,18 @@ to configure the type of diagrams to be generated. The default value is `gitgrap
 - `codeNavigator.showLineNumbers`
 to configure whether to show line numbers in the diagrams. The default value is true
 
+- `codeNavigator.testRunCommand`
+to configure Command to run tests, `${path:name:ext}` variable will be replaced with space separated list of file paths. The default value is `yarn test:unit ${path:name}`. 
+  -  File path to be used in command can be configured using below variables. All file paths will be space separated:
+      - `${path:name:ext}`: complete path of file with extension
+      - `${path:name}` : complete path of file without extension
+      - `${path}` : complete path of parent directory of file
+      - `${name:ext}` : file name with extension
+      - `${name}` : file name without extension
+
+- `codeNavigator.testRunCoverageCommand`
+to configure Command to run tests with coverage, `${path:name}` variable will be replaced with space separated list of file paths. The default value is `yarn test:unit:coverage ${path:name}`. File path can be configured in similar manner as `codeNavigator.testRunCommand`
+
 ### Commands contributed to Command Palette
 
 - `ACN: Load Bookmarks from an App`
@@ -113,6 +125,9 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
        - file name
         - text or any tags in bookmark name (any @tag OR #tag which can be agreed on team level) 
     - Clicking on a bookmark will open the file at specific line in editor
+    - Click 'Run Test' on flow name will run test cases for all files involved in the flow
+    - Click 'Run Test' on a bookmark will run test cases for that file
+    - Click 'Test Coverage' on a bookmark will show the test coverage for that source file
 
 ### Status Bar Items
 - `Bookmark Bar`

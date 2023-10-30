@@ -33,7 +33,7 @@ class FlowBookmarksProvider extends TreeProvider {
           bookmark: bookmark,
           code: bookmark.code,
           lineNumber: lineNumber,
-          path: bookmark.path,
+          path: bookmark.dirPath,
           tooltip: bookmark.description,
           contextValue: "file",
           type: "bookmark",
@@ -41,7 +41,7 @@ class FlowBookmarksProvider extends TreeProvider {
             command: "acn.bookmarks.openFileToLine",
             title: "Open File",
             arguments: [
-              bookmark.path && path.join(this.config.projectDir, bookmark.path),
+              bookmark.dirPath && path.join(this.config.projectDir, bookmark.dirPath, bookmark.fileName),
               lineNumber,
             ],
           },

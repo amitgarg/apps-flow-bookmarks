@@ -2,7 +2,7 @@ function GitManager(codeToFileMap, flowName, showLineNumbers) {
   this.codeToFileMap = codeToFileMap;
   this.flowName = flowName;
   this.showLineNumbers = showLineNumbers;
-  this.branches = { main: true };
+  this.branches = {};
   this.order = 1;
   this.gitFlow = [];
 }
@@ -22,13 +22,17 @@ GitManager.prototype.commit = function (step, tag) {
   );
 };
 GitManager.prototype.checkoutBranch = function (step) {
-  const fileName = this.codeToFileMap[step.code].shortenedPath;
-  if (this.branches[fileName]) {
-    this.gitFlow.push(`checkout ${fileName}`);
+  const { fileName, rootLevel } = this.codeToFileMap[step.code];
+  const shortenedPath = [rootLevel, "...", fileName].join("/");
+  if (this.branches[shortenedPath]) {
+    this.gitFlow.push(`checkout ${shortenedPath}`);
   } else {
-    this.branches[fileName] = true;
-    this.gitFlow.push(`branch ${fileName} order:${this.order++}`);
+    this.branches[shortenedPath] = true;
+    this.gitFlow.push(`branch ${shortenedPath} order:${this.order++}`);
   }
+};
+GitManager.prototype.checkoutMainBranch = function () {
+  this.gitFlow.push(`checkout main`);
 };
 GitManager.prototype.generateDiagram = function () {
   const outputFlow = [
@@ -52,7 +56,7 @@ function generateGitGraphMarkdown(
   showLineNumbers
 ) {
   const gitManager = new GitManager(codeToFileMap, flowName, showLineNumbers);
-  gitManager.checkoutBranch({ code: "main" });
+  gitManager.checkoutMainBranch();
   gitManager.commit({ description: "START" }, flowName);
   gitManager.checkoutBranch(flow[0]);
   gitManager.commit(flow[0]);
@@ -61,7 +65,7 @@ function generateGitGraphMarkdown(
     if (element.code !== flow[index - 1].code) {
       if (element.description.startsWith("(")) {
         // to have separate cases within 1 type of user flow
-        gitManager.checkoutBranch({ code: "main" });
+        gitManager.checkoutMainBranch();
         gitManager.commit({ description: `START: ${element.description}` });
       }
       gitManager.checkoutBranch(element);
@@ -100,8 +104,8 @@ SequenceDiagramManager.prototype.commit = function (step) {
 SequenceDiagramManager.prototype.checkoutBranch = function () {
   let prevStep;
   return (step) => {
-    const { fileName, shortenedPath, rootLevel } =
-      this.codeToFileMap[step.code];
+    const { fileName, rootLevel } = this.codeToFileMap[step.code];
+    const shortenedPath = [rootLevel, "...", fileName].join("/");
     if (!this.branches[shortenedPath]) {
       this.branches[shortenedPath] = true;
       if (prevStep) {
@@ -118,6 +122,7 @@ SequenceDiagramManager.prototype.checkoutBranch = function () {
     prevStep = step;
   };
 };
+
 SequenceDiagramManager.prototype.generateDiagram = function () {
   const outputFlow = [
     "```mermaid",
@@ -149,7 +154,6 @@ function generateSequenceDiagramMarkdown(
     showLineNumbers
   );
   let checkoutBranch = gitManager.checkoutBranch();
-
   checkoutBranch({ code: "main" });
   gitManager.commit({ code: "main", description: "START" });
   checkoutBranch(flow[0]);

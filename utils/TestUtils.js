@@ -2,34 +2,74 @@ const vscode = require("vscode");
 const nodePath = require("path");
 
 const getTestPath = (path, fileName) => {
-  let testFileName = nodePath.parse(fileName).name+".test";
-  return nodePath.join(nodePath.dirname(path), testFileName);
+  let file = nodePath.parse(fileName);
+  return {
+    path: path,
+    name: file.name,
+    ext: file.ext,
+  };
 };
-const runTest = ({ type, flowName, bookmarks }, coverage) => {
+const VariableHandler = {
+  "path:name:ext": ({ path, name, ext }) => {
+    return `${path}/${name}${ext}`;
+  },
+  "path:name": ({ path, name }) => {
+    return `${path}/${name}`;
+  },
+  path: ({ path }) => {
+    return `${path}`;
+  },
+  "name:ext": ({ name, ext }) => {
+    return `${name}${ext}`;
+  },
+  name: ({ name }) => {
+    return `${name}`;
+  },
+};
+const handlePaths = (command, testPaths) => {
+  let transformations = Object.keys(VariableHandler).filter((variable) => {
+    return command.includes("${" + variable + "}");
+  });
+  let replacements = transformations.map((transformKey) => {
+    return {
+      key: transformKey,
+      value: testPaths.map(VariableHandler[transformKey]),
+    };
+  });
+  replacements.forEach(({ key, value }) => {
+    command = command.replaceAll("${" + key + "}", value.join(" "));
+  });
+  return command;
+};
+
+const runTest = (
+  { type, flowName, bookmarks },
+  coverage,
+  testRunCommand,
+  testRunCoverageCommand
+) => {
   let testCommand;
   let terminalTitle;
-  let testPath;
+  let testPaths;
   if (type == "bookmark") {
-    const { path, fileName, description } = bookmarks[0];
+    const { dirPath, fileName, description } = bookmarks[0];
     terminalTitle = "Bookmark: " + description;
-    testPath = getTestPath(path, fileName);
+    testPaths = [getTestPath(dirPath, fileName)];
   } else {
     terminalTitle = "Flow: " + flowName;
     let pathMap = {};
-    testPath = bookmarks
-      .reduce((acc, bookmark) => {
-        const { path, fileName } = bookmark;
-        if (!pathMap[path]) {
-          pathMap[path] = true;
-          acc.push(getTestPath(path, fileName));
-        }
-        return acc;
-      }, [])
-      .join(" ");
+    testPaths = bookmarks.reduce((acc, bookmark) => {
+      const { dirPath, fileName } = bookmark;
+      if (!pathMap[dirPath]) {
+        pathMap[dirPath] = true;
+        acc.push(getTestPath(dirPath, fileName));
+      }
+      return acc;
+    }, []);
   }
-  testCommand = !!coverage
-    ? `yarn test:unit:coverage ${testPath}`
-    : `yarn test:unit ${testPath}`;
+  testCommand = !!coverage ? testRunCoverageCommand : testRunCommand;
+  testCommand = handlePaths(testCommand, testPaths);
+
   let myTerminal = vscode.window.createTerminal(terminalTitle);
   myTerminal.sendText(testCommand);
   myTerminal.show();

@@ -60,6 +60,8 @@ function activate(context) {
   let appsManager;
   let appsFolder;
   let tagManager;
+  let testRunCommand;
+  let testRunCoverageCommand;
 
   const defaultAllFlowsProviderData = {
     joinedFlows: {},
@@ -284,11 +286,11 @@ function activate(context) {
     ({ bookmark, type, app, flowType, label: flowName }) => {
       if (type == "flow") {
         appsManager.resolveFlow(app, flowName, flowType).then((bookmarks) => {
-          runTest({ type, flowName, bookmarks }, coverage);
+          runTest({ type, flowName, bookmarks }, coverage, testRunCommand, testRunCoverageCommand);
           log(`Running test for Flow: "${flowName}"`);
         });
       } else {
-        runTest({ type, bookmarks: [bookmark] }, coverage);
+        runTest({ type, bookmarks: [bookmark] }, coverage, testRunCommand, testRunCoverageCommand);
         log(`Running test for Bookmark: "${bookmark.description}"`);
       }
     };
@@ -569,6 +571,8 @@ function activate(context) {
     let tagsDir = config.get("tagsDir");
     let diagramsType = config.get("diagramsType");
     let showLineNumbers = config.get("showLineNumbers");
+    testRunCommand = config.get("testRunCommand");
+    testRunCoverageCommand = config.get("testRunCoverageCommand");
     appsFolder = config.get("appsDir");
 
     projectDir = getProjectDir(projectName);
