@@ -33,7 +33,7 @@ class FlowBookmarksProvider extends TreeProvider {
           bookmark: bookmark,
           code: bookmark.code,
           lineNumber: lineNumber,
-          path: bookmark.dirPath,
+          path: bookmark.shortenedPath,
           tooltip: bookmark.description,
           contextValue: "file",
           type: "bookmark",

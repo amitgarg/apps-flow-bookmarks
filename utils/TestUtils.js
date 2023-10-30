@@ -68,6 +68,7 @@ const runTest = (
     }, []);
   }
   testCommand = !!coverage ? testRunCoverageCommand : testRunCommand;
+  terminalTitle = (coverage ? "Cover:" : "Test:") + terminalTitle;
   testCommand = handlePaths(testCommand, testPaths);
 
   let myTerminal = vscode.window.createTerminal(terminalTitle);

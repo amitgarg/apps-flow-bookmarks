@@ -89,8 +89,7 @@ class AppLoader {
               description: description,
               text,
               lineNumber,
-              dirPath: codeToFileMap[code].dirPath,
-              fileName: codeToFileMap[code].fileName,
+              ...codeToFileMap[code]
             };
           });
         });

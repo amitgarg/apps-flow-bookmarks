@@ -1,8 +1,8 @@
 const path = require("path");
 function handleFileCode() {
   const codeToFileMap = {
-    main: { fileName: "main", filePath: "main", rootLevel: "main" },
-    FLOW_NOT_FOUND: { fileName: "FLOW_NOT_FOUND", filePath: "", rootLevel: "" },
+    main: { fileName: "main", filePath: "main", rootLevel: "main", shortenedPath: "main" },
+    FLOW_NOT_FOUND: { fileName: "FLOW_NOT_FOUND", filePath: "", rootLevel: "" , shortenedPath: "FLOW_NOT_FOUND"},
   };
   let counter = 0;
   const SKIP_FIRST_LEVEL_FOLDERS = [
@@ -37,7 +37,7 @@ function handleFileCode() {
           rootLevel = filePathArray[0];
         }
       }
-      codeToFileMap[code] = { fileName, dirPath, rootLevel };
+      codeToFileMap[code] = { fileName, dirPath, rootLevel, shortenedPath: [rootLevel, "...", fileName].join("/") };
       return code;
     },
     getCodeToFileMap: () => codeToFileMap,
