@@ -286,11 +286,21 @@ function activate(context) {
     ({ bookmark, type, app, flowType, label: flowName }) => {
       if (type == "flow") {
         appsManager.resolveFlow(app, flowName, flowType).then((bookmarks) => {
-          runTest({ type, flowName, bookmarks }, coverage, testRunCommand, testRunCoverageCommand);
+          runTest(
+            { type, flowName, bookmarks },
+            coverage,
+            testRunCommand,
+            testRunCoverageCommand
+          );
           log(`Running test for Flow: "${flowName}"`);
         });
       } else {
-        runTest({ type, bookmarks: [bookmark] }, coverage, testRunCommand, testRunCoverageCommand);
+        runTest(
+          { type, bookmarks: [bookmark] },
+          coverage,
+          testRunCommand,
+          testRunCoverageCommand
+        );
         log(`Running test for Bookmark: "${bookmark.description}"`);
       }
     };
@@ -371,6 +381,58 @@ function activate(context) {
     }
   );
   context.subscriptions.push(openFlowCommand);
+
+  const moveBookmarkCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.moveBookmark",
+    ({ flowName, index }) => {
+      let fromIndex = index;
+      let toIndex;
+      vscode.window
+        .showInputBox({
+          placeHolder: "ToIndex*",
+          prompt: "Move Bookmark to other index",
+          value: "",
+          ignoreFocusOut: true,
+        })
+        .then((input) => {
+          toIndex = parseInt(input.trim());
+          if (isNaN(toIndex)) {
+            throw new Error("Invalid number input");
+          }
+        })
+        .then(() => {
+          return vscode.commands
+            .executeCommand("flowbookmark.exportMyBookmarks")
+            .then(() => {
+              return appsManager.moveBookmark(
+                state.activeApp,
+                flowName,
+                fromIndex,
+                toIndex
+              );
+            })
+            .then(() => {
+              vscode.commands.executeCommand("flowbookmark.importFromFile");
+            });
+        });
+    }
+  );
+  context.subscriptions.push(moveBookmarkCommand);
+
+  const rearrangeBookmarksCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.rearrangeBookmarks",
+    ({ label }) => {
+      vscode.commands
+        .executeCommand("flowbookmark.exportMyBookmarks")
+        .then(() => {
+          return appsManager.reArrangeBookmarks(label);
+        })
+        .then(() => {
+          vscode.commands.executeCommand("flowbookmark.importFromFile");
+        });
+    }
+  );
+  context.subscriptions.push(rearrangeBookmarksCommand);
 
   const createDiagramCommand = vscode.commands.registerCommand(
     "acn.bookmarks.diagram",

@@ -175,6 +175,16 @@
         "command": "acn.bookmarks.runTestCoverage",
         "title": "Test Coverage",
         "icon": "$(checklist)"
+      },
+      {
+        "command": "acn.bookmarks.rearrangeBookmarks",
+        "title": "Rearrange Bookmarks",
+        "icon": "$(list-ordered)"
+      },
+      {
+        "command": "acn.bookmarks.moveBookmark",
+        "title": "Move Bookmark",
+        "icon": "$(move)"
       }
     ],
     "views": {
@@ -240,6 +250,14 @@
         {
           "command": "acn.bookmarks.runTestCoverage",
           "when": "false"
+        },
+        {
+          "command": "acn.bookmarks.rearrangeBookmarks",
+          "when": "false"
+        },
+        {
+          "command": "acn.bookmarks.moveBookmark",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -292,6 +310,16 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "acn.bookmarks.rearrangeBookmarks",
+          "when": "view == flowBookmarksView && viewItem == flow",
+          "group": "inline"
+        },
+        {
+          "command": "acn.bookmarks.moveBookmark",
+          "when": "view == flowBookmarksView && viewItem == dependency",
+          "group": "inline"
+        },
         {
           "command": "acn.bookmarks.openFileToLine",
           "group": "navigation",

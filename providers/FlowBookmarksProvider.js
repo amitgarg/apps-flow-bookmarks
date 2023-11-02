@@ -23,9 +23,9 @@ class FlowBookmarksProvider extends TreeProvider {
         app,
         flowType
       };
-      data.children = bookmarks.map((bookmark, index) => {
+      data.children = bookmarks.map((bookmark) => {
         let lineNumber = parseInt(bookmark.lineNumber) + 1;
-        let label = `${index}. ${bookmark.description}`;
+        let label = `${bookmark.index}. ${bookmark.description}`;
         let bookmarkElement = {
           label: { label, highlights: getHighlights(label) },
           description: `${bookmark.fileName} - ${lineNumber}`,

@@ -5,6 +5,7 @@ const { handleFileCode } = require("./utils/FileUtils");
 const AppLoader = require("./AppLoader");
 const { generateDiagram } = require("./utils/DiagramUtils");
 const { FlowType } = require("./utils/Constants");
+const { moveBookmark, rearrangeBookmarks } = require("./utils/RearrangeUtils");
 
 class AppsManager {
   constructor(
@@ -147,6 +148,26 @@ class AppsManager {
             return false;
           });
       });
+  };
+  moveBookmark = (appName, flowName, fromIndex, toIndex) => {
+    return this.resolveFlow(appName, flowName, FlowType.BASIC).then(
+      (bookmarks) => {
+        const filePath = path.join(
+          this.projectDir,
+          this.activeBookmarksPath,
+          this.bookmarkFileName
+        );
+        return moveBookmark(flowName, fromIndex, toIndex, filePath, bookmarks);
+      }
+    );
+  };
+  reArrangeBookmarks = (flowName) => {
+    const filePath = path.join(
+      this.projectDir,
+      this.activeBookmarksPath,
+      this.bookmarkFileName
+    );
+    return rearrangeBookmarks(flowName, filePath);
   };
   dispose() {
     Object.keys(this.appLoaders).forEach((appName) => {

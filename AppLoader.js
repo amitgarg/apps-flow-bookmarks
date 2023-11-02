@@ -76,6 +76,7 @@ class AppLoader {
 
         const flows = {};
         const codeToFileMap = this.getCodeToFileMap();
+        
         Object.keys(jsonData).forEach((key) => {
           const code = this.getFileCode(key);
           Object.keys(jsonData[key]).forEach((lineNumber) => {
@@ -89,6 +90,7 @@ class AppLoader {
               description: description,
               text,
               lineNumber,
+              index,
               ...codeToFileMap[code]
             };
           });
