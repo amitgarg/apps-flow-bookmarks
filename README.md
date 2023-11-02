@@ -91,6 +91,8 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
     - list flows bookmarked for the active app
     - click on the bookmark to open the respective file/line in editor 
     - remove the bookmark for a flow by clicking on the remove icon
+    - move bookmark to other index within same flow
+    - rearrange all bookmarks for a flow (sorts bookmarks in the index order and assigns new index to each bookmark)
     - edit
         - edit bookmark name
         - move bookmark to other flow by editing flow name
