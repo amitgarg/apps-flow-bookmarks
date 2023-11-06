@@ -4,6 +4,8 @@ const path = require("path");
 // const { loadState, saveState } = require("./manage");
 const AllFlowsProvider = require("./providers/AllFlowsProvider");
 const FlowBookmarksProvider = require("./providers/FlowBookmarksProvider");
+const FlowFilesProvider = require("./providers/FlowFilesProvider");
+
 const AppsManager = require("./AppsManager");
 const TagManager = require("./TagManager");
 const { getJoinFlowConfig } = require("./utils/FileUtils");
@@ -88,6 +90,15 @@ function activate(context) {
   });
   context.subscriptions.push(flowBookmarksTreeView);
 
+  const flowFilesProvider = new FlowFilesProvider(
+    {},
+    { projectDir, contextKey: "flowFiles" }
+  );
+  const flowFilesTreeView = vscode.window.createTreeView("flowFiles", {
+    treeDataProvider: flowFilesProvider,
+  });
+  context.subscriptions.push(flowFilesTreeView);
+
   // Whenever switch to a different branch, which might have different bookmarks, it is better to run this command.
   let actionReset = vscode.commands.registerCommand(
     "acn.bookmarks.reset",
@@ -166,6 +177,7 @@ function activate(context) {
               };
               allFlowsTreeDataProvider.setData(data);
               flowBookmarksProvider.setData({});
+              flowFilesProvider.setData({});
             }
           );
         })
@@ -272,9 +284,19 @@ function activate(context) {
       if (filePath) {
         let line = parseInt(lineNumber);
         vscode.workspace.openTextDocument(filePath).then((doc) => {
-          vscode.window.showTextDocument(doc, {
-            selection: new vscode.Range(line - 1, 0, line - 1, 0),
-          });
+          const editor = vscode.window.visibleTextEditors.find(
+            (editor) => editor.document.uri.fsPath === filePath
+          );
+          let options = {};
+          if (editor) {
+            options.viewColumn = editor.viewColumn;
+          }else{
+            options.viewColumn = vscode.ViewColumn.Active;
+          }
+          if (line > 0) {
+            options.selection = new vscode.Range(line - 1, 0, line - 1, 0);
+          }
+          vscode.window.showTextDocument(doc, options);
         });
       }
     }
@@ -283,25 +305,26 @@ function activate(context) {
 
   const runTestCallback =
     (coverage) =>
-    ({ bookmark, type, app, flowType, label: flowName }) => {
+    ({ file, label, type }) => {
       if (type == "flow") {
-        appsManager.resolveFlow(app, flowName, flowType).then((bookmarks) => {
-          runTest(
-            { type, flowName, bookmarks },
-            coverage,
-            testRunCommand,
-            testRunCoverageCommand
-          );
-          log(`Running test for Flow: "${flowName}"`);
-        });
-      } else {
+        let files = flowFilesProvider.treeData[0].children.map(
+          (child) => child.file
+        );
         runTest(
-          { type, bookmarks: [bookmark] },
+          { type, label, files },
           coverage,
           testRunCommand,
           testRunCoverageCommand
         );
-        log(`Running test for Bookmark: "${bookmark.description}"`);
+        log(`Running test for Flow: "${label}"`);
+      } else {
+        runTest(
+          { type, files: [file] },
+          coverage,
+          testRunCommand,
+          testRunCoverageCommand
+        );
+        log(`Running test for File: "${file.fileName}"`);
       }
     };
 
@@ -376,6 +399,7 @@ function activate(context) {
         })
         .then((data) => {
           flowBookmarksProvider.setData(data);
+          flowFilesProvider.setData(data);
           log(`Open Flow: "${flowName}"`);
         });
     }

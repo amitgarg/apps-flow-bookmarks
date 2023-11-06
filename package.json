@@ -198,6 +198,11 @@
           "id": "flowBookmarks",
           "name": "Flow Bookmarks",
           "icon": "images/fb-bookmark.svg"
+        },
+        {
+          "id": "flowFiles",
+          "name": "Flow Files",
+          "icon": "images/fb-bookmark.svg"
         }
       ]
     },
@@ -263,7 +268,7 @@
       "view/title": [
         {
           "command": "acn.bookmarks.saveForApp",
-          "when": "view == flowBookmarksView",
+          "when": "view == flowBookmarksView && appLoaded == true",
           "showOn": "always",
           "group": "navigation"
         },
@@ -312,12 +317,12 @@
       "view/item/context": [
         {
           "command": "acn.bookmarks.rearrangeBookmarks",
-          "when": "view == flowBookmarksView && viewItem == flow",
+          "when": "view == flowBookmarksView && appLoaded == true && viewItem == flow",
           "group": "inline"
         },
         {
           "command": "acn.bookmarks.moveBookmark",
-          "when": "view == flowBookmarksView && viewItem == dependency",
+          "when": "view == flowBookmarksView && appLoaded == true && viewItem == dependency",
           "group": "inline"
         },
         {
@@ -328,12 +333,12 @@
         {
           "command": "acn.bookmarks.runTest",
           "group": "inline",
-          "when": "view == flowBookmarks"
+          "when": "view == flowFiles"
         },
         {
           "command": "acn.bookmarks.runTestCoverage",
           "group": "inline",
-          "when": "view == flowBookmarks && viewItem == bookmark"
+          "when": "view == flowFiles && viewItem == file"
         },
         {
           "command": "acn.bookmarks.manageJoinedBookmarks",

@@ -43,7 +43,7 @@ const handlePaths = (command, testPaths) => {
 };
 
 const runTest = (
-  { type, flowName, bookmarks },
+  { type, label, files },
   coverage,
   testRunCommand,
   testRunCoverageCommand
@@ -51,21 +51,15 @@ const runTest = (
   let testCommand;
   let terminalTitle;
   let testPaths;
-  if (type == "bookmark") {
-    const { dirPath, fileName, description } = bookmarks[0];
-    terminalTitle = "Bookmark: " + description;
+  if (type == "file") {
+    const { dirPath, fileName } = files[0];
+    terminalTitle = "File: " + fileName;
     testPaths = [getTestPath(dirPath, fileName)];
   } else {
-    terminalTitle = "Flow: " + flowName;
-    let pathMap = {};
-    testPaths = bookmarks.reduce((acc, bookmark) => {
-      const { dirPath, fileName } = bookmark;
-      if (!pathMap[dirPath]) {
-        pathMap[dirPath] = true;
-        acc.push(getTestPath(dirPath, fileName));
-      }
-      return acc;
-    }, []);
+    terminalTitle = "Flow: " + label;
+    testPaths = files.map(({ dirPath, fileName }) => {
+      return getTestPath(dirPath, fileName);
+    });
   }
   testCommand = !!coverage ? testRunCoverageCommand : testRunCommand;
   terminalTitle = (coverage ? "Cover:" : "Test:") + terminalTitle;

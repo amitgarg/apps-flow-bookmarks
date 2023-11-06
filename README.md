@@ -127,9 +127,13 @@ This command drops all in-memory flows and bookmarks, and loads all flows again 
        - file name
         - text or any tags in bookmark name (any @tag OR #tag which can be agreed on team level) 
     - Clicking on a bookmark will open the file at specific line in editor
+
+- `FLOW FILES`
+    - Lists all files involved in a flow selected in `ALL FLOWS` view
+    - Clicking on a file will open the file in editor
     - Click 'Run Test' on flow name will run test cases for all files involved in the flow
-    - Click 'Run Test' on a bookmark will run test cases for that file
-    - Click 'Test Coverage' on a bookmark will show the test coverage for that source file
+    - Click 'Run Test' on a file will run test cases for that file
+    - Click 'Test Coverage' on a file will show the test coverage for that source file
 
 ### Status Bar Items
 - `Bookmark Bar`
