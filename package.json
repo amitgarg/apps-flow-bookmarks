@@ -1,6 +1,6 @@
 {
   "name": "appwise-code-navigator",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "displayName": "Appwise Code Flows Navigator",
   "description": "vscode extension to create flow-wise bookmarks categorized in apps, helps you navigate and debug large and complex code repositories.",
   "main": "extension.js",
