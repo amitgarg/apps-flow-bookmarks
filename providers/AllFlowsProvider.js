@@ -79,7 +79,7 @@ class AllFlowsProvider extends TreeProvider {
             description: app,
             type: "subflow",
             app,
-            flowName,
+            flowName: flow,
             flowType: FlowType.BASIC,
             contextValue: "show,diagram,copyJson,tag",
             iconPath,
