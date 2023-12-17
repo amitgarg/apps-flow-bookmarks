@@ -32,7 +32,13 @@
   to configure the directory where the tags file is located. The default value is `.vscode`
 
 - `codeNavigator.appsDir`
-  to configure the directory where the apps are located. The default value is `packages/apps`
+  to configure the directory where the apps are located. The default value is `packages/apps`. Set the value as empty string if you just want to create custom app names.
+   
+- `codeNavigator.enableCustomAppNames`
+  to configure whether to allow user to enter custom app names. The default value is false
+
+- `codeNavigator.metaDir`
+  to configure the directory where the bookmarks will be saved in the respective folder of app name. The default value is `packages/apps`  
 
 - `codeNavigator.diagramsDir`
   to configure the directory where the diagrams will be saved. The default value is `docs/flows`

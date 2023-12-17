@@ -34,7 +34,17 @@
         "codeNavigator.appsDir": {
           "type": "string",
           "default": "packages/apps",
-          "description": "Path where all the apps are located in the project"
+          "description": "Path where all the apps are located in the project (empty string => user will not see predefined app names)"
+        },
+        "codeNavigator.enableCustomAppNames": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow user to enter custom app names"
+        },
+        "codeNavigator.metaDir": {
+          "type": "string",
+          "default": "packages/apps",
+          "description": "Path where all bookmark files will be stored in respective app-name folders"
         },
         "codeNavigator.tagsDir": {
           "type": "string",

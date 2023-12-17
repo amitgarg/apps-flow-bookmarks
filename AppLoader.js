@@ -1,5 +1,5 @@
 const fs = require("fs").promises;
-const vscode = require("vscode");
+const path = require("path");
 
 class AppLoader {
   constructor(
@@ -26,13 +26,11 @@ class AppLoader {
 
   initializeBookmarks = () => {
     const fileContent = "{}";
-    return fs
-      .writeFile(this.activeBookmarksFile, fileContent)
-      .then(() => {
-        this.basicFlows = {};
-        this.joinedFlows = {};
-        this.onChangeBookmarksStatus(this.appName, true);
-      });
+    return fs.writeFile(this.activeBookmarksFile, fileContent).then(() => {
+      this.basicFlows = {};
+      this.joinedFlows = {};
+      this.onChangeBookmarksStatus(this.appName, true);
+    });
   };
 
   loadBookmarks = (intialize) => {
@@ -48,8 +46,11 @@ class AppLoader {
   };
 
   saveBookmarks = () => {
-    return fs
-      .copyFile(this.activeBookmarksFile, this.appBookmarksFile);
+    return fs.mkdir(path.dirname(this.appBookmarksFile), { recursive: true }).then(
+      () => {
+        return fs.copyFile(this.activeBookmarksFile, this.appBookmarksFile);
+      }
+    );
   };
 
   manageJoinedBookmarks = () => {
@@ -61,9 +62,7 @@ class AppLoader {
         return fs.writeFile(filePath, "{}");
       })
       .then(() => {
-        return vscode.workspace.openTextDocument(filePath).then((doc) => {
-          vscode.window.showTextDocument(doc);
-        });
+        return filePath;
       });
   };
 
@@ -76,7 +75,7 @@ class AppLoader {
 
         const flows = {};
         const codeToFileMap = this.getCodeToFileMap();
-        
+
         Object.keys(jsonData).forEach((key) => {
           const code = this.getFileCode(key);
           Object.keys(jsonData[key]).forEach((lineNumber) => {
@@ -91,7 +90,7 @@ class AppLoader {
               text,
               lineNumber,
               index,
-              ...codeToFileMap[code]
+              ...codeToFileMap[code],
             };
           });
         });

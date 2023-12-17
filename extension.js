@@ -60,10 +60,11 @@ function activate(context) {
   context.subscriptions.push(myStatusBarItem);
   let state = new ExtensionState();
   let appsManager;
-  let appsFolder;
+  let metaDir;
   let tagManager;
   let testRunCommand;
   let testRunCoverageCommand;
+  let enableCustomAppNames;
 
   const defaultAllFlowsProviderData = {
     joinedFlows: {},
@@ -113,15 +114,47 @@ function activate(context) {
     "acn.bookmarks.initializeForApp",
     () => {
       if (!state.isError) {
+        let apps = [];
+        if (enableCustomAppNames) {
+          apps = ["+ Add New App"];
+        }
+        apps = [...apps, ...appsManager.getAppsWithoutBookmarks()];
         vscode.window
-          .showQuickPick(appsManager.getAppsWithoutBookmarks(), {
+          .showQuickPick(apps, {
             placeHolder: "Select an App",
             title: "Create bookmarks related to App",
           })
           .then((appName) => {
-            loadBookmarksFromApp(appName, true).then(() => {
-              log(`Initialize bookmarks for App: ${appName}`);
-            });
+            if (appName === "+ Add New App") {
+              vscode.window
+                .showInputBox({
+                  placeHolder: "Enter App Name",
+                  prompt: "Create Custom App Name",
+                  value: "",
+                  ignoreFocusOut: true,
+                  validateInput: (appName) => {
+                    appName = appName.trim();
+                    if (appName.length < 3) {
+                      return "minimum 3 characters long";
+                    }
+                    if (appName.includes(" ")) {
+                      return "cannot contain spaces";
+                    }
+                    if (appsManager.getAppsWithBookmarks().includes(appName)) {
+                      return "already initialized";
+                    }
+                  },
+                })
+                .then((appName) => {
+                  loadBookmarksFromApp(appName, true).then(() => {
+                    log(`Initialize bookmarks for App: ${appName}`);
+                  });
+                });
+            } else {
+              loadBookmarksFromApp(appName, true).then(() => {
+                log(`Initialize bookmarks for App: ${appName}`);
+              });
+            }
           });
       }
     }
@@ -185,7 +218,7 @@ function activate(context) {
           return vscode.commands.executeCommand("flowbookmark.importFromFile");
         })
         .then(() => {
-          vscode.commands.executeCommand("setContext", "appLoaded", !intialize);
+          vscode.commands.executeCommand("setContext", "appLoaded", true);
         });
     }
   };
@@ -197,7 +230,11 @@ function activate(context) {
         if (flowInfo && flowInfo.flowType === FlowType.JOINED) {
           if (state.activeApp) {
             const appLoader = appsManager.getAppLoader(state.activeApp);
-            appLoader.manageJoinedBookmarks();
+            appLoader.manageJoinedBookmarks().then((filePath) => {
+              return vscode.workspace.openTextDocument(filePath).then((doc) => {
+                vscode.window.showTextDocument(doc);
+              });
+            });
           }
         } else {
           vscode.window
@@ -207,7 +244,13 @@ function activate(context) {
             })
             .then((appName) => {
               const appLoader = appsManager.getAppLoader(appName);
-              appLoader.manageJoinedBookmarks();
+              appLoader.manageJoinedBookmarks().then((filePath) => {
+                return vscode.workspace
+                  .openTextDocument(filePath)
+                  .then((doc) => {
+                    vscode.window.showTextDocument(doc);
+                  });
+              });
               log(`Manage Joined Flows for App: ${appName}`);
             });
         }
@@ -290,7 +333,7 @@ function activate(context) {
           let options = {};
           if (editor) {
             options.viewColumn = editor.viewColumn;
-          }else{
+          } else {
             options.viewColumn = vscode.ViewColumn.Active;
           }
           if (line > 0) {
@@ -376,7 +419,7 @@ function activate(context) {
               .split(" ")
               .map((keyword) => `(${keyword})`)
               .join("|");
-            const filesToInclude = `${appsFolder}/**/{${bookmarkFileName},${joinedBookmarksFileName}}`;
+            const filesToInclude = `${metaDir}/**/{${bookmarkFileName},${joinedBookmarksFileName}}`;
             vscode.commands.executeCommand("workbench.action.findInFiles", {
               query,
               filesToInclude,
@@ -659,33 +702,41 @@ function activate(context) {
     let showLineNumbers = config.get("showLineNumbers");
     testRunCommand = config.get("testRunCommand");
     testRunCoverageCommand = config.get("testRunCoverageCommand");
-    appsFolder = config.get("appsDir");
+    let appsFolder = config.get("appsDir");
+    metaDir = config.get("metaDir");
+    enableCustomAppNames = config.get("enableCustomAppNames");
 
     projectDir = getProjectDir(projectName);
     if (projectDir) {
-      if (fs.existsSync(path.join(projectDir, appsFolder))) {
-        if (appsManager) {
-          appsManager.dispose();
+      if (fs.existsSync(path.join(projectDir, metaDir))) {
+        if (!appsFolder || fs.existsSync(path.join(projectDir, appsFolder))) {
+          if (appsManager) {
+            appsManager.dispose();
+          }
+          appsManager = new AppsManager(
+            context,
+            projectDir,
+            bookmarkFileName,
+            joinedBookmarksFileName,
+            appsFolder,
+            metaDir,
+            activeBookmarksPath,
+            diagramOutputDir,
+            diagramsType,
+            showLineNumbers,
+            enableCustomAppNames
+          );
+          tagManager = new TagManager(
+            path.join(projectDir, tagsDir, tagFileName)
+          );
+          allFlowsTreeDataProvider.setTagManager(tagManager);
+          state.initialize();
+          context.subscriptions.push(appsManager);
+        } else {
+          state.setPathError(true, appsFolder);
         }
-        appsManager = new AppsManager(
-          context,
-          projectDir,
-          bookmarkFileName,
-          joinedBookmarksFileName,
-          appsFolder,
-          activeBookmarksPath,
-          diagramOutputDir,
-          diagramsType,
-          showLineNumbers
-        );
-        tagManager = new TagManager(
-          path.join(projectDir, tagsDir, tagFileName)
-        );
-        allFlowsTreeDataProvider.setTagManager(tagManager);
-        state.initialize();
-        context.subscriptions.push(appsManager);
       } else {
-        state.setPathError(true, appsFolder);
+        state.setPathError(true, metaDir);
       }
     } else {
       state.setPathError(false, projectName);
@@ -708,7 +759,7 @@ function activate(context) {
       this.isError = true;
       vscode.window.showErrorMessage(
         isAppPathError
-          ? `Apps folder ${path} does not exist`
+          ? `${path} does not exist in project`
           : `${path} not found in workspace`
       );
       resetUI("PATH_ERROR", this.isInitialized);

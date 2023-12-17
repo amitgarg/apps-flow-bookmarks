@@ -14,20 +14,24 @@ class AppsManager {
     bookmarkFileName,
     joinedBookmarksFileName,
     appsFolder,
+    metaDir,
     activeBookmarksPath,
     diagramOutputDir,
     diagramsType,
-    showLineNumbers
+    showLineNumbers,
+    enableCustomAppNames
   ) {
     this.context = context;
     this.projectDir = projectDir;
     this.bookmarkFileName = bookmarkFileName;
     this.joinedBookmarksFileName = joinedBookmarksFileName;
     this.appsFolder = appsFolder;
+    this.metaDir = metaDir;
     this.activeBookmarksPath = activeBookmarksPath;
     this.diagramOutputDir = diagramOutputDir;
     this.diagramsType = diagramsType;
     this.showLineNumbers = showLineNumbers;
+    this.enableCustomAppNames = enableCustomAppNames;
     this.appLoaders = {};
     this.fileCodeUtils = handleFileCode();
     this.apps = [];
@@ -45,13 +49,13 @@ class AppsManager {
         appName,
         path.join(
           this.projectDir,
-          this.appsFolder,
+          this.metaDir,
           appName,
           this.bookmarkFileName
         ),
         path.join(
           this.projectDir,
-          this.appsFolder,
+          this.metaDir,
           appName,
           this.joinedBookmarksFileName
         ),
@@ -71,26 +75,56 @@ class AppsManager {
     const app = this.apps.find((app) => app.label === appName);
     if (app) {
       app.hasBookmarks = hasBookmarks;
+    } else if (this.enableCustomAppNames) {
+      this.apps.push({ label: appName, hasBookmarks });
     }
   };
 
   _refreshListOfApps() {
-    const folderPath = path.join(this.projectDir, this.appsFolder);
-    const appDirs = fs
-      .readdirSync(folderPath, { withFileTypes: true })
-      .filter((file) => file.isDirectory());
-    this.apps = appDirs.map(({ name: appDir }) => {
-      try {
-        fs.accessSync(
-          path.join(folderPath, appDir, this.bookmarkFileName),
-          fs.constants.F_OK
-        );
-        return { label: appDir, hasBookmarks: true };
-      } catch (e) {
-        return { label: appDir, hasBookmarks: false };
-        // no bookmarks.json file
+    const appsFolderPath = path.join(this.projectDir, this.appsFolder);
+    const metaDirPath = path.join(this.projectDir, this.metaDir);
+
+    const metaDirs = fs
+      .readdirSync(metaDirPath, { withFileTypes: true })
+      .filter((file) => {
+        if (file.isDirectory()) {
+          try {
+            fs.accessSync(
+              path.join(metaDirPath, file.name, this.bookmarkFileName),
+              fs.constants.F_OK
+            );
+            return true;
+          } catch (e) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      });
+    if (this.appsFolder == "") {
+      if (this.enableCustomAppNames) {
+        this.apps = metaDirs.map(({ name: appDir }) => {
+          return { label: appDir, hasBookmarks: true, custom: true };
+        });
+      } else {
+        this.apps = [];
       }
-    });
+    } else {
+      this.apps = fs
+        .readdirSync(appsFolderPath, { withFileTypes: true })
+        .filter((file) => file.isDirectory())
+        .map(({ name: appDir }) => {
+          return { label: appDir, hasBookmarks: false, custom: false };
+        });
+      metaDirs.forEach(({ name: appDir }) => {
+        let app = this.apps.find((app) => app.label === appDir);
+        if (app) {
+          app.hasBookmarks = true;
+        } else if (this.enableCustomAppNames) {
+          this.apps.push({ label: appDir, hasBookmarks: true, custom: true });
+        }
+      });
+    }
   }
   _resolveJoinedFlow = (appName, flowName) => {
     return this.getAppLoader(appName)
@@ -98,7 +132,7 @@ class AppsManager {
       .then((subflows) => {
         return Promise.all(
           subflows.map((subflow) => {
-            return this.getAppLoader(subflow.app).getBasicFlow(subflow.flow);
+            return this._resolveBasicFlow(subflow.app, subflow.flow);// this.getAppLoader(subflow.app).getBasicFlow(subflow.flow);
           })
         ).then((subFlows) => {
           return [].concat(...subFlows);
