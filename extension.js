@@ -64,6 +64,7 @@ function activate(context) {
   let tagManager;
   let testRunCommand;
   let testRunCoverageCommand;
+  let explainFlowQuery;
   let enableCustomAppNames;
 
   const defaultAllFlowsProviderData = {
@@ -518,6 +519,108 @@ function activate(context) {
   );
   context.subscriptions.push(createDiagramCommand);
 
+  const toggleBreakpointsCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.toggleBreakpoints",
+    ({ flowName, flowType, app }) => {
+      appsManager.resolveFlow(app, flowName, flowType).then((bookmarks) => {
+        try {
+          let breakpointsEnabled = appsManager.getBreakpointsStatus(
+            app,
+            flowName
+          );
+
+          if (breakpointsEnabled) {
+            vscode.debug.breakpoints;
+            bookmarks.forEach(({ dirPath, fileName, lineNumber }) => {
+              const uri = vscode.Uri.file(
+                path.join(projectDir, dirPath, fileName)
+              );
+              const breakpointsToRemove = vscode.debug.breakpoints.filter(
+                (bp) =>
+                  bp instanceof vscode.SourceBreakpoint &&
+                  bp.location.uri.fsPath === uri.fsPath &&
+                  bp.location.range.start.line == lineNumber
+              );
+
+              vscode.debug.removeBreakpoints(breakpointsToRemove);
+            });
+          } else {
+            let breakpoints = bookmarks.map((bookmark) => {
+              const uri = vscode.Uri.file(
+                path.join(projectDir, bookmark.dirPath, bookmark.fileName)
+              );
+              const position = new vscode.Position(
+                parseInt(bookmark.lineNumber),
+                0
+              );
+              return new vscode.SourceBreakpoint(
+                new vscode.Location(uri, position)
+              );
+            });
+
+            vscode.debug.addBreakpoints(breakpoints);
+          }
+          appsManager.toggleBreakpoints(app, flowName);
+        } catch (e) {
+          console.log(e);
+        }
+      });
+      log(`Create Diagram for Flow: "${flowName}"`);
+    }
+  );
+  context.subscriptions.push(toggleBreakpointsCommand);
+
+  const copilotQueryCommand = vscode.commands.registerCommand(
+    "acn.bookmarks.copilotQuery",
+    ({ flowName, flowType, app }) => {
+      appsManager.resolveFlow(app, flowName, flowType).then((bookmarks) => {
+        let query = explainFlowQuery;
+        let pathMap = {};
+        let stepsData = "";
+        bookmarks.forEach((bookmark, index) => {
+          const { dirPath, fileName, lineNumber, shortenedPath, description } =
+            bookmark;
+          const filePath = path.join(dirPath, fileName);
+          if (!pathMap[filePath]) {
+            pathMap[filePath] = true;
+          }
+          stepsData += `\n${index + 1}. ${filePath}:${lineNumber}\n`;
+          stepsData += `\t${description}`;
+        });
+        query = query.replaceAll("${flowName}", flowName);
+        query = query.replaceAll("${steps}", stepsData);
+        Object.keys(pathMap).forEach((filePath) => {
+          const absoluteFilePath = path.join(projectDir, filePath);
+          vscode.workspace
+            .openTextDocument(absoluteFilePath)
+            .then((doc) =>
+              vscode.window.showTextDocument(doc, { preview: false })
+            );
+        });
+        log(`Opened all Files for Flow: "${flowName}"`);
+
+        vscode.env.clipboard
+          .writeText(query)
+          .then(() => {
+            log(
+              `Copilot Query copied to clipboard for Flow: "${flowName}"\n${query}`
+            );
+            vscode.window.showInformationMessage(
+              `Copilot Query copied to clipboard\n\n${query}`
+            );
+          })
+          .catch((err) => {
+            log(
+              `Copilot Query copy to clipboard for Flow: "${flowName}"`,
+              false
+            );
+            vscode.window.showErrorMessage("Failed to copy text to clipboard");
+          });
+      });
+    }
+  );
+  context.subscriptions.push(copilotQueryCommand);
+
   const copyAppFlowCommand = vscode.commands.registerCommand(
     "acn.bookmarks.copyAppFlow",
     ({ flowName, flowType, app }) => {
@@ -705,6 +808,7 @@ function activate(context) {
     let appsFolder = config.get("appsDir");
     metaDir = config.get("metaDir");
     enableCustomAppNames = config.get("enableCustomAppNames");
+    explainFlowQuery = config.get("explainFlowQuery");
 
     projectDir = getProjectDir(projectName);
     if (projectDir) {

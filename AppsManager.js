@@ -203,6 +203,15 @@ class AppsManager {
     );
     return rearrangeBookmarks(flowName, filePath);
   };
+  toggleBreakpoints = (appName, flowName) => {
+    const appLoader = this.getAppLoader(appName);
+    return appLoader.toggleBreakpoints(flowName);
+  }
+  getBreakpointsStatus = (appName, flowName) => {
+    const appLoader = this.getAppLoader(appName);
+    return appLoader.getBreakpointsStatus(flowName);
+  }
+
   dispose() {
     Object.keys(this.appLoaders).forEach((appName) => {
       this.appLoaders[appName].dispose();

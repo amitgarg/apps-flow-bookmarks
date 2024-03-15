@@ -22,6 +22,7 @@ class AppLoader {
     this.onChangeBookmarksStatus = onChangeBookmarksStatus;
     this.basicFlows;
     this.joinedFlows;
+    this.enabledBreakpoints = {};
   }
 
   initializeBookmarks = () => {
@@ -141,6 +142,14 @@ class AppLoader {
         return {};
       });
   };
+
+  toggleBreakpoints = (flowName) => {
+    this.enabledBreakpoints[flowName] = !this.enabledBreakpoints[flowName];
+  }
+
+  getBreakpointsStatus = (flowName) => {
+    return this.enabledBreakpoints[flowName] || false;
+  }
 
   dispose() {
     this.basicFlows = null;

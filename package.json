@@ -1,6 +1,6 @@
 {
   "name": "appwise-code-navigator",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "displayName": "Appwise Code Flows Navigator",
   "description": "vscode extension to create flow-wise bookmarks categorized in apps, helps you navigate and debug large and complex code repositories.",
   "main": "extension.js",
@@ -84,6 +84,12 @@
           "default": "yarn test:unit:coverage ${path:name}",
           "description": "Command to run tests with coverage, paths variable will be replaced with space separated list of file paths without extension",
           "category": "test"
+        },
+        "codeNavigator.explainFlowQuery": {
+          "type": "string",
+          "default": "Given below are all the steps for the given code flow ${flowName} described in format {index}. {filePath}:{lineNumber} {description} in order.\ncan you provide the detailed description for each of the steps mentioned below. you may refer to description of each step for reference. the explaination should be easy to understand for a new team member.focus on function signature, input, output, and the purpose of the function.\n${steps}",
+          "description": "Query to be used to get the explanation of the flow from copilot",
+          "category": "copilot"
         }
       }
     },
@@ -195,6 +201,16 @@
         "command": "acn.bookmarks.moveBookmark",
         "title": "Move Bookmark",
         "icon": "$(move)"
+      },
+      {
+        "command": "acn.bookmarks.toggleBreakpoints",
+        "title": "Toggle Breakpoints for the flow and opens All files",
+        "icon": "$(breakpoints-activate)"
+      },
+      {
+        "command": "acn.bookmarks.copilotQuery",
+        "title": "Open All files for the flow and copy the copilot query to the clipboard",
+        "icon": "$(copilot)"
       }
     ],
     "views": {
@@ -273,6 +289,14 @@
         {
           "command": "acn.bookmarks.moveBookmark",
           "when": "false"
+        },
+        {
+          "command": "acn.bookmarks.toggleBreakpoints",
+          "when": "false"
+        },
+        {
+          "command": "acn.bookmarks.copilotQuery",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -341,6 +365,16 @@
           "when": "view == flowBookmarks && viewItem == bookmark"
         },
         {
+          "command": "acn.bookmarks.toggleBreakpoints",
+          "group": "inline",
+          "when": "view == flowBookmarks && viewItem == flow"
+        },
+        {
+          "command": "acn.bookmarks.copilotQuery",
+          "group": "inline",
+          "when": "view == flowBookmarks && viewItem == flow"
+        },
+        {
           "command": "acn.bookmarks.runTest",
           "group": "inline",
           "when": "view == flowFiles"
@@ -374,6 +408,16 @@
           "command": "acn.bookmarks.copyAppFlow",
           "group": "inline",
           "when": "view == allFlows && viewItem =~ /copyJson/"
+        },
+        {
+          "command": "acn.bookmarks.toggleBreakpoints",
+          "group": "inline",
+          "when": "view == allFlows && viewItem =~ /toggleBreakpoints/"
+        },
+        {
+          "command": "acn.bookmarks.copilotQuery",
+          "group": "inline",
+          "when": "view == allFlows && viewItem =~ /copilotQuery/"
         }
       ]
     }

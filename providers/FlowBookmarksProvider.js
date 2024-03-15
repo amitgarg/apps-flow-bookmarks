@@ -21,7 +21,9 @@ class FlowBookmarksProvider extends TreeProvider {
         label: flowName,
         type: "flow",
         app,
-        flowType
+        flowType,
+        contextValue: "flow",
+        flowName
       };
       data.children = bookmarks.map((bookmark) => {
         let lineNumber = parseInt(bookmark.lineNumber) + 1;

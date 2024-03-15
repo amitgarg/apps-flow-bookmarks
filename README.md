@@ -65,6 +65,9 @@
 - `codeNavigator.testRunCoverageCommand`
   to configure Command to run tests with coverage, `${path:name}` variable will be replaced with space separated list of file paths. The default value is `yarn test:unit:coverage ${path:name}`. File path can be configured in similar manner as `codeNavigator.testRunCommand`
 
+- `codeNavigator.explainFlowQuery`
+  to configure the query to be asked to copilot to explain flows. The query supports 2 variables `${flowName}` and `${steps}`. Variable steps is replaced with numbered list of filename, line number and bookmark name. The default value is `Given below are all the steps for the given code flow ${flowName} described in format {index}. {filePath}:{lineNumber} {description} in order.\ncan you provide the detailed description for each of the steps mentioned below. you may refer to description of each step for reference. the explaination should be easy to understand for a new team member.focus on function signature, input, output, and the purpose of the function.\n${steps}`
+
 ### Commands contributed to Command Palette
 
 - `ACN: Load Bookmarks from an App`
@@ -153,6 +156,8 @@
         - remove tags
       - Render flow bookmarks and files(affects `FLOW BOOKMARKS` and `FLOW FILES` views)
       - Click: on joined flow to show its sub flows in tree
+      - Copilot Query: It opens all files in editor and copies a query to the clipboard to be asked to copilot to explain the flow. you may open the copilot and just paste the query.
+      - Toggle Breakpoints: to enable/disable breakpoints for all files involved in the flow
 - `FLOW BOOKMARKS`
 
   - About - Lists all bookmarks for a flow selected in `ALL FLOWS` view - Highlight the @tag and #tag in bookmark name
@@ -163,6 +168,9 @@
       - Search all bookmarks with a keyword
         - file name
         - text or any tags in bookmark name (any @tag OR #tag which can be agreed on team level)
+    - Flow
+      - Copilot Query: It opens all files in editor and copies a query to the clipboard to be asked to copilot to explain the flow. you may open the copilot and just paste the query.
+      - Toggle Breakpoints: to enable/disable breakpoints for all files involved in the flow
     - Bookmark
       - Click: open the file at specific line in editor
 

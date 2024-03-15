@@ -43,7 +43,7 @@ class AllFlowsProvider extends TreeProvider {
           app: appName,
           flowType: FlowType.BASIC,
           flowName,
-          contextValue: "show,diagram,copyJson,tag",
+          contextValue: "toggleBreakpoints,show,diagram,copyJson,tag,copilotQuery",
           iconPath,
         };
       });
@@ -67,7 +67,7 @@ class AllFlowsProvider extends TreeProvider {
           app: appName,
           flowName,
           flowType: FlowType.JOINED,
-          contextValue: "show,diagram,copyJson,tag",
+          contextValue: "toggleBreakpoints,show,diagram,copyJson,tag,copilotQuery",
           iconPath,
         };
         data.children = joinedFlows[flowName].map(({ flow, app }) => {
@@ -81,7 +81,7 @@ class AllFlowsProvider extends TreeProvider {
             app,
             flowName: flow,
             flowType: FlowType.BASIC,
-            contextValue: "show,diagram,copyJson,tag",
+            contextValue: "toggleBreakpoints,show,diagram,copyJson,tag,copilotQuery",
             iconPath,
           };
         });
